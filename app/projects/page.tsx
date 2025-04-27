@@ -21,6 +21,7 @@ export default function Projects() {
                   title={project.title}
                   slug={project.slug}
                   featuredImage={project.featuredImage}
+                  featuredVideo={project.featuredVideo}
                   shortSummary={project.shortSummary}
                   year={project.year}
                   services={project.services}

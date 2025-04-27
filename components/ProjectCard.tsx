@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import ProjectMedia from './ProjectMedia';
 
 interface ProjectCardProps {
   title: string;
   slug: string;
-  featuredImage: string;
+  featuredImage?: string;
+  featuredVideo?: string;
   shortSummary: string;
   year: number;
   services: string[];
@@ -13,24 +15,27 @@ export default function ProjectCard({
   title,
   slug,
   featuredImage,
+  featuredVideo,
   shortSummary,
   year,
   services
 }: ProjectCardProps) {
+  const hasVideo = !!featuredVideo;
+  const featuredContent = hasVideo ? featuredVideo : featuredImage;
+  const mediaType = hasVideo ? 'video' : 'image';
+
+  if (!featuredContent) {
+    return null;
+  }
+
   return (
     <Link href={`/projects/${slug}`} className="block">
       <div>
-        <div className="relative aspect-video w-full mb-4">
-          <img
-            src={featuredImage}
-            alt={title}
-            style={{ 
-              objectFit: 'cover',
-              width: '100%',
-              height: '100%'
-            }}
-          />
-        </div>
+        <ProjectMedia 
+          type={mediaType} 
+          src={featuredContent} 
+          alt={title}
+        />
         <h3 className="text-2xl font-normal mb-2">{title}</h3>
         <p className="text-gray-700 mb-4">{shortSummary}</p>
         <div className="flex flex-wrap gap-2">

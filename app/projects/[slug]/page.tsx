@@ -1,6 +1,72 @@
 import Link from 'next/link';
 import Layout from '../../../components/Layout';
+import ProjectMedia from '../../../components/ProjectMedia';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
+import { ProjectMediaItem } from '../../../lib/types';
+
+interface ProjectImageItem {
+  image: string;
+  caption?: string;
+  order?: number;
+}
+
+interface ProjectVideoItem {
+  video: string;
+  caption?: string;
+  order?: number;
+}
+
+interface ProjectDataWithMedia {
+  title: string;
+  slug: string;
+  featuredImage?: string;
+  featuredVideo?: string;
+  shortSummary: string;
+  mainSummary: string;
+  year: number;
+  services: string[];
+  projectImages?: ProjectImageItem[];
+  projectVideos?: ProjectVideoItem[];
+  projectMedia?: ProjectMediaItem[];
+  [key: string]: unknown;
+}
+
+// Helper function to combine and sort media items
+function combineAndSortMedia(projectData: ProjectDataWithMedia): ProjectMediaItem[] {
+  const combinedMedia: ProjectMediaItem[] = [];
+  
+  // Add images if they exist
+  if (projectData.projectImages && projectData.projectImages.length > 0) {
+    projectData.projectImages.forEach((item: ProjectImageItem, index: number) => {
+      combinedMedia.push({
+        type: 'image',
+        src: item.image,
+        caption: item.caption,
+        order: item.order || index + 1 // Use order if available, otherwise use index
+      });
+    });
+  }
+  
+  // Add videos if they exist
+  if (projectData.projectVideos && projectData.projectVideos.length > 0) {
+    projectData.projectVideos.forEach((item: ProjectVideoItem, index: number) => {
+      combinedMedia.push({
+        type: 'video',
+        src: item.video,
+        caption: item.caption,
+        order: item.order || (projectData.projectImages?.length || 0) + index + 1 // Place after images by default
+      });
+    });
+  }
+  
+  // Add project media if it exists (this is for the new unified approach)
+  if (projectData.projectMedia && projectData.projectMedia.length > 0) {
+    combinedMedia.push(...projectData.projectMedia);
+  }
+  
+  // Sort by order field
+  return combinedMedia.sort((a, b) => a.order - b.order);
+}
 
 // Correct way to type this in Next.js 15
 export function generateStaticParams() {
@@ -20,26 +86,28 @@ export default async function Project(
   const slug = params.slug;
   const projectData = getProjectData(slug);
   const mainSummaryHtml = await getMarkdownContent(projectData.mainSummary);
+  
+  // Determine which media to show as hero (video takes precedence)
+  const hasHeroVideo = !!projectData.featuredVideo;
+  const heroMediaType = hasHeroVideo ? 'video' : 'image';
+  const heroMediaSrc = hasHeroVideo ? projectData.featuredVideo : projectData.featuredImage;
+  
+  // Combine and sort all media items
+  const sortedMedia = combineAndSortMedia(projectData as unknown as ProjectDataWithMedia);
 
   return (
     <Layout>
       <article className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            {/* Hero Image */}
-            {projectData.featuredImage && (
+            {/* Hero Media (Image or Video) */}
+            {heroMediaSrc && (
               <div className="mb-8">
-                <div className="relative w-full aspect-video">
-                  <img
-                    src={projectData.featuredImage}
-                    alt={projectData.title}
-                    style={{ 
-                      objectFit: 'cover',
-                      width: '100%',
-                      height: '100%'
-                    }}
-                  />
-                </div>
+                <ProjectMedia
+                  type={heroMediaType}
+                  src={heroMediaSrc}
+                  alt={projectData.title}
+                />
               </div>
             )}
             
@@ -73,26 +141,17 @@ export default async function Project(
               />
             </div>
             
-            {/* Project Gallery */}
-            {projectData.projectImages && projectData.projectImages.length > 0 && (
+            {/* Project Gallery - Combined Images and Videos */}
+            {sortedMedia.length > 0 && (
               <div className="space-y-8">
-                {projectData.projectImages.map((item, index) => (
-                  <div key={index}>
-                    <div className="relative w-full aspect-video mb-2">
-                      <img
-                        src={item.image}
-                        alt={item.caption || `${projectData.title} image ${index + 1}`}
-                        style={{ 
-                          objectFit: 'cover',
-                          width: '100%',
-                          height: '100%'
-                        }}
-                      />
-                    </div>
-                    {item.caption && (
-                      <p className="text-sm text-gray-600">{item.caption}</p>
-                    )}
-                  </div>
+                {sortedMedia.map((item, index) => (
+                  <ProjectMedia
+                    key={index}
+                    type={item.type}
+                    src={item.src}
+                    caption={item.caption}
+                    alt={`${projectData.title} ${item.type} ${index + 1}`}
+                  />
                 ))}
               </div>
             )}
