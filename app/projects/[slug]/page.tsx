@@ -2,13 +2,7 @@ import Link from 'next/link';
 import Layout from '../../../components/Layout';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
 
-interface ProjectParams {
-  params: {
-    slug: string
-  }
-  searchParams: Record<string, string | string[] | undefined>
-}
-
+// Correct way to type this in Next.js 15
 export function generateStaticParams() {
   const projects = getAllProjects();
   return projects.map((project) => ({
@@ -16,13 +10,17 @@ export function generateStaticParams() {
   }));
 }
 
-export default async function Project({ params }: ProjectParams) {
-  // Await params to fix the Next.js 15 async issue
-  const resolvedParams = await Promise.resolve(params);
-  const slug = resolvedParams.slug;
+// Use proper typing with correct params structure
+export default async function Project(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
+  const slug = params.slug;
   const projectData = getProjectData(slug);
   const mainSummaryHtml = await getMarkdownContent(projectData.mainSummary);
-  
+
   return (
     <Layout>
       <article className="py-12 md:py-16">
