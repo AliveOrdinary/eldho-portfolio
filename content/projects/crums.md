@@ -1,7 +1,7 @@
 ---
 title: Crums
 slug: crums
-featuredImage: /images/uploads/crums-hero.jpg
+featuredImage: /images/uploads/crums-hero.png
 shortSummary: Crums is a startup bringing the flavours of South Indian snacks to a new generation. But with 14 snack variations, traditional packaging was too costly. The challenge? Cut costs without sacrificing a fresh, exciting brand presence.
 mainSummary: |
   ## The Challenge
@@ -20,13 +20,13 @@ services:
   - Motion Graphics
   - Photography
 projectImages:
-  - image: /images/uploads/crums-packaging.jpg
+  - image: /images/uploads/crums-packaging.png
     caption: The full range of Crums packaging showcasing consistent branding with distinctive variants
-  - image: /images/uploads/crums-colors.jpg
+  - image: /images/uploads/crums-colors.png
     caption: Color palette showing primary green with complementary yellow and accent colors
-  - image: /images/uploads/crums-typography.jpg
+  - image: /images/uploads/crums-typography.png
     caption: Typography system featuring the playful, distinctive Crums wordmark and supporting fonts
-  - image: /images/uploads/crums-app.jpg
+  - image: /images/uploads/crums-app.png
     caption: Mobile application designs extending the brand into digital touchpoints
 featured: true
 order: 1

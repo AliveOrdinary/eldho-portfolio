@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Layout from '../../components/Layout';
 import { getAboutPageData } from '../../lib/markdown';
 
@@ -61,13 +60,14 @@ export default function About() {
                 <div className="sticky top-8">
                   {aboutData.profileImage && (
                     <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden">
-                      <Image
+                      <img
                         src={aboutData.profileImage}
                         alt="Eldhose Kuriyan"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        priority
+                        style={{ 
+                          objectFit: 'cover',
+                          width: '100%',
+                          height: '100%'
+                        }}
                       />
                     </div>
                   )}

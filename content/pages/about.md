@@ -13,5 +13,5 @@ achievements:
     description: Recognized as one of RGD's Seven Emerging Student Designers at DesignThinkers 2023
   - year: 2019
     description: University First Rank - BFA Applied Art
-profileImage: /images/uploads/profile.jpg
+profileImage: /images/uploads/profile.png
 --- 

@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import Layout from '../../../components/Layout';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
@@ -7,6 +6,7 @@ interface ProjectParams {
   params: {
     slug: string
   }
+  searchParams: Record<string, string | string[] | undefined>
 }
 
 export function generateStaticParams() {
@@ -17,7 +17,9 @@ export function generateStaticParams() {
 }
 
 export default async function Project({ params }: ProjectParams) {
-  const { slug } = params;
+  // Await params to fix the Next.js 15 async issue
+  const resolvedParams = await Promise.resolve(params);
+  const slug = resolvedParams.slug;
   const projectData = getProjectData(slug);
   const mainSummaryHtml = await getMarkdownContent(projectData.mainSummary);
   
@@ -30,13 +32,14 @@ export default async function Project({ params }: ProjectParams) {
             {projectData.featuredImage && (
               <div className="mb-8">
                 <div className="relative w-full aspect-video">
-                  <Image
+                  <img
                     src={projectData.featuredImage}
                     alt={projectData.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 1200px"
-                    priority
+                    style={{ 
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%'
+                    }}
                   />
                 </div>
               </div>
@@ -78,12 +81,14 @@ export default async function Project({ params }: ProjectParams) {
                 {projectData.projectImages.map((item, index) => (
                   <div key={index}>
                     <div className="relative w-full aspect-video mb-2">
-                      <Image
+                      <img
                         src={item.image}
                         alt={item.caption || `${projectData.title} image ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 1200px"
+                        style={{ 
+                          objectFit: 'cover',
+                          width: '100%',
+                          height: '100%'
+                        }}
                       />
                     </div>
                     {item.caption && (
