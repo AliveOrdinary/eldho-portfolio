@@ -1,2 +1,2 @@
 # eldho-portfolio
-Portfolio websitr for Eldhose Kuriyan
+Portfolio website for Eldhose Kuriyan
