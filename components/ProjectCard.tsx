@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import ProjectMedia from './ProjectMedia';
+import React from 'react';
 
 interface ProjectCardProps {
   title: string;
@@ -18,20 +21,27 @@ export default function ProjectCard({
   featuredVideo,
 }: ProjectCardProps) {
   const hasVideo = !!featuredVideo;
-  const featuredContent = hasVideo ? featuredVideo : featuredImage;
+  const featuredContentSrc = hasVideo ? featuredVideo : featuredImage;
   const mediaType = hasVideo ? 'video' : 'image';
 
-  if (!featuredContent) {
+  if (!featuredContentSrc) {
     return null;
   }
 
+  const handleMediaClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (mediaType === 'video') {
+      event.stopPropagation();
+    }
+  };
+
   return (
-    <Link href={`/projects/${slug}`} className="block">
-      <div>
+    <Link href={`/projects/${slug}`} className="block group" aria-label={`View project: ${title}`}>
+      <div className="mb-4">
         <ProjectMedia 
           type={mediaType} 
-          src={featuredContent} 
+          src={featuredContentSrc} 
           alt={title}
+          onClick={handleMediaClick}
         />
       </div>
     </Link>

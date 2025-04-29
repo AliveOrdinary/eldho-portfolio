@@ -16,6 +16,7 @@ collections:
       - { label: "Slug", name: "slug", widget: "string" }
       - { label: "Featured Image", name: "featuredImage", widget: "image", required: false }
       - { label: "Featured Video", name: "featuredVideo", widget: "file", required: false }
+      - { label: "Featured Video Has Audio?", name: "featuredVideoHasAudio", widget: "boolean", default: false, required: false }
       - { label: "Short Summary", name: "shortSummary", widget: "string", pattern: ['.{1,160}', "Must be 160 characters or less"] }
       - { label: "Main Summary", name: "mainSummary", widget: "markdown" }
       - { label: "Year", name: "year", widget: "number" }
@@ -35,6 +36,7 @@ collections:
           - { label: "Video", name: "video", widget: "file" }
           - { label: "Caption", name: "caption", widget: "string", required: false }
           - { label: "Display Order", name: "order", widget: "number", default: 1, required: false }
+          - { label: "Has Audio?", name: "hasAudio", widget: "boolean", default: false, required: false }
       - { label: "Featured", name: "featured", widget: "boolean", default: false }
       - { label: "Order", name: "order", widget: "number", default: 1 }
 

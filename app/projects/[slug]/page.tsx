@@ -2,37 +2,11 @@ import Link from 'next/link';
 import Layout from '../../../components/Layout';
 import ProjectMedia from '../../../components/ProjectMedia';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
-import { ProjectMediaItem } from '../../../lib/types';
-
-interface ProjectImageItem {
-  image: string;
-  caption?: string;
-  order?: number;
-}
-
-interface ProjectVideoItem {
-  video: string;
-  caption?: string;
-  order?: number;
-}
-
-interface ProjectDataWithMedia {
-  title: string;
-  slug: string;
-  featuredImage?: string;
-  featuredVideo?: string;
-  shortSummary: string;
-  mainSummary: string;
-  year: number;
-  services: string[];
-  projectImages?: ProjectImageItem[];
-  projectVideos?: ProjectVideoItem[];
-  projectMedia?: ProjectMediaItem[];
-  [key: string]: unknown;
-}
+import { ProjectMediaItem, ProjectImageItem, ProjectVideoItem, ProjectData } from '../../../lib/types';
 
 // Helper function to combine and sort media items
-function combineAndSortMedia(projectData: ProjectDataWithMedia): ProjectMediaItem[] {
+// Use ProjectData type directly
+function combineAndSortMedia(projectData: ProjectData): ProjectMediaItem[] { 
   const combinedMedia: ProjectMediaItem[] = [];
   
   // Add images if they exist
@@ -42,30 +16,39 @@ function combineAndSortMedia(projectData: ProjectDataWithMedia): ProjectMediaIte
         type: 'image',
         src: item.image,
         caption: item.caption,
-        order: item.order || index + 1 // Use order if available, otherwise use index
+        order: item.order || index + 1 
       });
     });
   }
   
-  // Add videos if they exist
+  // Add videos if they exist, passing hasAudio
   if (projectData.projectVideos && projectData.projectVideos.length > 0) {
     projectData.projectVideos.forEach((item: ProjectVideoItem, index: number) => {
       combinedMedia.push({
         type: 'video',
         src: item.video,
         caption: item.caption,
-        order: item.order || (projectData.projectImages?.length || 0) + index + 1 // Place after images by default
+        hasAudio: item.hasAudio || false, 
+        order: item.order || (projectData.projectImages?.length || 0) + index + 1 
       });
     });
   }
   
-  // Add project media if it exists (this is for the new unified approach)
+  // Adjust this if you have a unified projectMedia field
+  // This part seems redundant if projectImages/projectVideos cover all media
+  /*
   if (projectData.projectMedia && projectData.projectMedia.length > 0) {
+     projectData.projectMedia.forEach(item => {
+         if(item.type === 'video' && !item.hasOwnProperty('hasAudio')) {
+             item.hasAudio = false; // Default if missing
+         }
+     });
     combinedMedia.push(...projectData.projectMedia);
   }
+  */
   
   // Sort by order field
-  return combinedMedia.sort((a, b) => a.order - b.order);
+  return combinedMedia.sort((a, b) => (a.order || 0) - (b.order || 0)); // Add default for order
 }
 
 // Correct way to type this in Next.js 15
@@ -84,16 +67,18 @@ export default async function Project(
 ) {
   const params = await props.params;
   const slug = params.slug;
-  const projectData = getProjectData(slug);
+  // Use ProjectData type directly
+  const projectData = getProjectData(slug) as ProjectData; 
   const mainSummaryHtml = await getMarkdownContent(projectData.mainSummary);
   
   // Determine which media to show as hero (video takes precedence)
   const hasHeroVideo = !!projectData.featuredVideo;
   const heroMediaType = hasHeroVideo ? 'video' : 'image';
   const heroMediaSrc = hasHeroVideo ? projectData.featuredVideo : projectData.featuredImage;
+  const heroHasAudio = projectData.featuredVideoHasAudio || false; 
   
   // Combine and sort all media items
-  const sortedMedia = combineAndSortMedia(projectData as unknown as ProjectDataWithMedia);
+  const sortedMedia = combineAndSortMedia(projectData);
 
   return (
     <Layout>
@@ -107,6 +92,7 @@ export default async function Project(
                   type={heroMediaType}
                   src={heroMediaSrc}
                   alt={projectData.title}
+                  hasAudio={heroMediaType === 'video' ? heroHasAudio : undefined}
                 />
               </div>
             )}
@@ -151,6 +137,7 @@ export default async function Project(
                     src={item.src}
                     caption={item.caption}
                     alt={`${projectData.title} ${item.type} ${index + 1}`}
+                    hasAudio={item.hasAudio}
                   />
                 ))}
               </div>

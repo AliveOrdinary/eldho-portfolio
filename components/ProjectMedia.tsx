@@ -1,109 +1,34 @@
 'use client'
 import Image from 'next/image';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, MouseEvent } from 'react';
 
-// Add custom types for browser-specific audio properties
-declare global {
-  interface HTMLVideoElement {
-    mozHasAudio?: boolean;
-    webkitAudioDecodedByteCount?: number;
-    audioTracks?: {
-      length: number;
-      [index: number]: {
-        enabled: boolean;
-      };
-    };
-  }
-}
 
 interface ProjectMediaProps {
   type: 'image' | 'video';
   src: string;
-  caption?: string;
   alt?: string;
-  aspectRatio?: string;
+  caption?: string; // Re-add caption if needed, or remove if unused
+  aspectRatio?: string; // Re-add if needed, or remove if unused
+  onClick?: (event: MouseEvent<HTMLDivElement>) => void;
+  hasAudio?: boolean; // Add hasAudio prop
 }
 
 export default function ProjectMedia({ 
   type, 
   src, 
   alt, 
+  onClick,
+  hasAudio // Destructure hasAudio prop
 }: ProjectMediaProps) {
   const [isMuted, setIsMuted] = useState(true);
-  const [hasAudio, setHasAudio] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Remove state related to automatic detection
+  // const [hasAudioState, setHasAudioState] = useState(false);
 
-  // Check if video has audio when it's loaded
-  useEffect(() => {
-    if (type !== 'video' || !videoRef.current) {
-      return;
-    }
+  // Remove the useEffect hook for automatic detection
 
-    const video = videoRef.current;
-    let audioCheckPerformed = false;
-
-    const checkForAudio = () => {
-      if (audioCheckPerformed) return; // Prevent multiple checks
-      audioCheckPerformed = true;
-      
-      // Log values for debugging
-      // console.log('Checking audio for:', src);
-      // console.log('  readyState:', video.readyState);
-      // console.log('  audioTracks:', video.audioTracks);
-      // console.log('  mozHasAudio:', video.mozHasAudio);
-      // console.log('  webkitAudioDecodedByteCount:', video.webkitAudioDecodedByteCount);
-      
-      let detectedAudio = false;
-      
-      // Standard check first (most reliable if supported)
-      if (typeof video.audioTracks !== 'undefined' && video.audioTracks.length > 0) {
-        // Further check if any track is enabled (though length > 0 is usually sufficient)
-        for (let i = 0; i < video.audioTracks.length; i++) {
-          if (video.audioTracks[i].enabled) {
-            detectedAudio = true;
-            break;
-          }
-        }
-        // If no track explicitly enabled, still consider length > 0 as having audio
-        if (!detectedAudio) detectedAudio = video.audioTracks.length > 0;
-      }
-      // Firefox specific check
-      else if (video.mozHasAudio === true) {
-         detectedAudio = true;
-      }
-      // Webkit specific check (less reliable for *audible* track)
-      // else if (typeof video.webkitAudioDecodedByteCount !== 'undefined' && video.webkitAudioDecodedByteCount > 0) {
-      //  detectedAudio = true;
-      // }
-      // Note: The AudioContext fallback is removed for simplicity as it can be unreliable and complex.
-
-      // console.log('  Detected Audio:', detectedAudio);
-      setHasAudio(detectedAudio);
-    };
-
-    // Check when metadata is loaded or later
-    if (video.readyState >= 1) { // HAVE_METADATA
-      checkForAudio();
-    } else {
-      video.addEventListener('loadedmetadata', checkForAudio, { once: true });
-    }
-
-    // Sometimes readyState changes without a specific event, double check on canplay
-    const handleCanPlay = () => {
-        if (!audioCheckPerformed) {
-           checkForAudio();
-        }
-    };
-    video.addEventListener('canplay', handleCanPlay, { once: true });
-
-    // Cleanup
-    return () => {
-      video.removeEventListener('loadedmetadata', checkForAudio);
-      video.removeEventListener('canplay', handleCanPlay);
-    };
-  }, [type, src]); // Re-run effect if type or src changes
-
-  const toggleMute = () => {
+  const toggleMute = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation(); // Prevent click from bubbling up from the button
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
@@ -111,7 +36,7 @@ export default function ProjectMedia({
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" onClick={onClick}>
       {type === 'image' ? (
         <div className="relative w-full aspect-video">
           <Image
@@ -133,11 +58,10 @@ export default function ProjectMedia({
             loop
             playsInline
             className="w-full object-fill"
-            // Ensure video preloads metadata for audio check
             preload="metadata" 
           />
           
-          {/* Custom mute/unmute button - only shown if video has audio */}
+          {/* Mute button shown based on hasAudio PROP now */}
           {hasAudio && (
             <button 
               onClick={toggleMute}
