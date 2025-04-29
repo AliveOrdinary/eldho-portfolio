@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 
 interface ProjectMediaProps {
@@ -19,7 +20,7 @@ export default function ProjectMedia({
     <div>
       <div className={`relative w-full ${aspectRatio} mb-2`}>
         {type === 'image' ? (
-          <img
+          <Image
             src={src}
             alt={alt || 'Project media'}
             style={{ 
@@ -31,7 +32,9 @@ export default function ProjectMedia({
         ) : (
           <video
             src={src}
-            controls
+            autoPlay
+            muted
+            loop
             style={{ 
               objectFit: 'cover',
               width: '100%',

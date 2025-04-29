@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Layout from '../../components/Layout';
 import { getAboutPageData } from '../../lib/markdown';
 
@@ -60,7 +61,7 @@ export default function About() {
                 <div className="sticky top-8">
                   {aboutData.profileImage && (
                     <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden">
-                      <img
+                      <Image
                         src={aboutData.profileImage}
                         alt="Eldhose Kuriyan"
                         style={{ 
