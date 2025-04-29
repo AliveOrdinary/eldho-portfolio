@@ -111,7 +111,7 @@ export default function ProjectMedia({
   };
 
   return (
-    <div className="relative w-full bg-gray-800">
+    <div className="relative w-full">
       {type === 'image' ? (
         <div className="relative w-full aspect-video">
           <Image
