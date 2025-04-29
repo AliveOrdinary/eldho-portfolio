@@ -16,9 +16,6 @@ export default function ProjectCard({
   slug,
   featuredImage,
   featuredVideo,
-  shortSummary,
-  year,
-  services
 }: ProjectCardProps) {
   const hasVideo = !!featuredVideo;
   const featuredContent = hasVideo ? featuredVideo : featuredImage;
@@ -36,16 +33,6 @@ export default function ProjectCard({
           src={featuredContent} 
           alt={title}
         />
-        <h3 className="text-2xl font-normal mb-2">{title}</h3>
-        <p className="text-gray-700 mb-4">{shortSummary}</p>
-        <div className="flex flex-wrap gap-2">
-          <div className="text-sm text-gray-500">
-            Services: {services.join(', ')}
-          </div>
-          <div className="text-sm text-gray-500">
-            Year: {year}
-          </div>
-        </div>
       </div>
     </Link>
   );

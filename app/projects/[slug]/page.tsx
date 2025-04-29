@@ -97,12 +97,12 @@ export default async function Project(
 
   return (
     <Layout>
-      <article className="py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
+      <article className="">
+        
+          <div className="mx-auto">
             {/* Hero Media (Image or Video) */}
             {heroMediaSrc && (
-              <div className="mb-8">
+              <div className="">
                 <ProjectMedia
                   type={heroMediaType}
                   src={heroMediaSrc}
@@ -143,7 +143,7 @@ export default async function Project(
             
             {/* Project Gallery - Combined Images and Videos */}
             {sortedMedia.length > 0 && (
-              <div className="space-y-8">
+              <div className="">
                 {sortedMedia.map((item, index) => (
                   <ProjectMedia
                     key={index}
@@ -166,7 +166,6 @@ export default async function Project(
               </Link>
             </div>
           </div>
-        </div>
       </article>
     </Layout>
   );

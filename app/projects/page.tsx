@@ -8,7 +8,7 @@ export default function Projects() {
   return (
     <Layout>
       <section className="py-12 md:py-20">
-        <div className="container mx-auto px-4">
+        <div className=" mx-auto px-4">
           <h1 className="text-4xl font-bold mb-10 text-center">
             Projects
           </h1>

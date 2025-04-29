@@ -2,7 +2,7 @@
 title: Crums
 slug: crums
 featuredImage: ""
-featuredVideo: /images/uploads/comp-1.mp4
+featuredVideo: /images/uploads/crums/comp-1.mp4
 shortSummary: Crums is a startup bringing the flavours of South Indian snacks to
   a new generation. But with 14 snack variations, traditional packaging was too
   costly. The challenge? Cut costs without sacrificing a fresh, exciting brand
@@ -28,16 +28,16 @@ services:
   - Photography
 projectImages:
   - order: 1
-    image: /images/uploads/crums-master-.jpg
+    image: /images/uploads/crums/crums-master-.jpg
   - order: 3
-    image: /images/uploads/artboard-3-2x.png
+    image: /images/uploads/crums/artboard-3-2x.png
   - order: 5
-    image: /images/uploads/mockup2.png
+    image: /images/uploads/crums/mockup2.png
 projectVideos:
   - order: 2
-    video: /images/uploads/logo-animation-ae-final.mp4
+    video: /images/uploads/crums/logo-animation-ae-final.mp4
   - order: 4
-    video: /images/uploads/crums-typography-ae-f.mp4
+    video: /images/uploads/crums/crums-typography-ae-f.mp4
 featured: true
 order: 1
 ---

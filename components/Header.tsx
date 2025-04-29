@@ -11,8 +11,8 @@ interface HeaderProps {
 
 export default function Header({ navigation }: HeaderProps) {
   return (
-    <header className="py-6">
-      <div className="container mx-auto px-4 flex items-center justify-between">
+    <header className="py-4 px-4 sticky top-0 bg-white z-10">
+      <div className="mx-auto  flex items-center justify-between">
         <div>
           <Link href="/" className="text-2xl font-medium">
             Eldho.

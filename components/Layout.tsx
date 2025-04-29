@@ -11,7 +11,7 @@ export default function Layout({ children }: LayoutProps) {
   const globalData = getGlobalData();
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="w-full min-h-screen flex flex-col">
       <Header 
         navigation={globalData.navigation} 
       />
