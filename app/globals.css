@@ -1,14 +1,17 @@
 @import "tailwindcss";
+@import "../styles/fonts.css";
 
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
+  --font-sans: 'PP Neue Montreal', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Right Serif', Georgia, serif;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-sans);
 }
 
 /* Custom transitions */

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import Layout from '../../../components/Layout';
 import ProjectMedia from '../../../components/ProjectMedia';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
@@ -97,7 +96,8 @@ export default async function Project(
               </div>
             )}
             
-            {/* Project Title */}
+            <div className="flex flex-col px-4">
+              {/* Project Title */}
             <h1 className="text-3xl font-normal mb-6">{projectData.title}</h1>
             
             {/* Project Info */}
@@ -126,6 +126,7 @@ export default async function Project(
                 dangerouslySetInnerHTML={{ __html: mainSummaryHtml }} 
               />
             </div>
+            </div>
             
             {/* Project Gallery - Combined Images and Videos */}
             {sortedMedia.length > 0 && (
@@ -143,15 +144,6 @@ export default async function Project(
               </div>
             )}
             
-            {/* Back Link */}
-            <div className="mt-16 pt-6 border-t border-gray-100">
-              <Link 
-                href="/projects" 
-                className="text-gray-700 hover:text-black transition-colors"
-              >
-                ← Back to Works
-              </Link>
-            </div>
           </div>
       </article>
     </Layout>

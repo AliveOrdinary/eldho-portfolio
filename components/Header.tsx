@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavigationItem {
   text: string;
@@ -32,10 +32,13 @@ const disappearingLetterVariants = {
   initial: { opacity: 1, y: 0 },
   animate: { opacity: 1, y: 0 },
   exit: { 
-    opacity: 0, 
-    y: -5, 
-    x: 5, 
-    transition: { duration: 0.2 } 
+    scaleX: 0,
+    opacity: 0,
+    transition: { 
+      type: "spring", 
+      damping: 12,
+      duration: 0.4
+    } 
   },
 };
 
@@ -46,12 +49,47 @@ const stayingLetterVariants = {
   exit: { opacity: 1, y: 0 }, // No exit animation for these letters
 };
 
+// Mobile menu animation variants
+const menuVariants = {
+  closed: {
+    opacity: 0,
+    y: -20,
+    transition: {
+      duration: 0.2,
+    }
+  },
+  open: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      staggerChildren: 0.07,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const menuItemVariants = {
+  closed: {
+    opacity: 0,
+    y: 20
+  },
+  open: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3
+    }
+  }
+};
+
 const fullName = "Eldhose Kuriyan";
 const targetLength = 5; // "Eldho" is 5 letters
 
 export default function Header({ navigation }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,10 +106,23 @@ export default function Header({ navigation }: HeaderProps) {
     };
   }, [hasScrolledOnce]);
 
+  // Disable body scroll when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
   return (
     <header className={`py-4 px-4 sticky top-0 bg-white z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
       <div className="mx-auto flex items-center justify-between">
-        <Link href="/" className="text-2xl font-medium relative h-8 w-56 flex items-center overflow-hidden">
+        {/* Logo/brand name - remains visible in both mobile and desktop */}
+        <Link href="/" className="text-2xl font-montreal font-book relative h-8 w-56 flex items-center overflow-hidden z-30">
           <div className="absolute inset-0 flex items-center justify-start">
             {/* Split the full name into individual letters */}
             <motion.div
@@ -87,9 +138,7 @@ export default function Header({ navigation }: HeaderProps) {
                 return (
                   <motion.span
                     key={`${char}-${index}`}
-                    // Use different variants based on whether the letter stays or goes
                     variants={shouldStay ? stayingLetterVariants : disappearingLetterVariants}
-                    // If hasScrolledOnce is true and letter should not stay, add "exit" animation class
                     animate={hasScrolledOnce && !shouldStay ? "exit" : "animate"}
                     style={{ display: 'inline-block' }}
                   >
@@ -101,8 +150,9 @@ export default function Header({ navigation }: HeaderProps) {
           </div>
         </Link>
 
-        <nav>
-          <ul className="flex space-x-8">
+        {/* Desktop navigation - hidden on mobile */}
+        <nav className="hidden md:block">
+          <ul className="flex space-x-8 font-montreal font-regular">
             {navigation.map((item, index) => (
               <li key={index}>
                 <Link
@@ -123,6 +173,89 @@ export default function Header({ navigation }: HeaderProps) {
             </li>
           </ul>
         </nav>
+
+        {/* Hamburger button - visible only on mobile and when menu is closed */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className={`md:hidden flex items-center justify-center w-12 h-12 z-30 ${isMenuOpen ? 'invisible' : 'visible'}`}
+          aria-label="Open menu"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        {/* Mobile menu overlay */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={menuVariants}
+              className="fixed inset-0 bg-white z-20 pt-24 px-8 flex flex-col"
+            >
+              {/* Close button in the right corner of mobile menu */}
+              <button 
+                onClick={() => setIsMenuOpen(false)}
+                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center"
+                aria-label="Close menu"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+
+              <nav>
+                <motion.ul className="flex flex-col space-y-6 text-3xl font-montreal font-book">
+                  {navigation.map((item, index) => (
+                    <motion.li key={index} variants={menuItemVariants}>
+                      <Link
+                        href={item.url}
+                        className="text-gray-800 hover:text-black inline-block"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.text}
+                      </Link>
+                    </motion.li>
+                  ))}
+                  <motion.li variants={menuItemVariants}>
+                    <Link
+                      href="/contact"
+                      className="text-gray-800 hover:text-black inline-block"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Let&apos;s connect <span className="text-yellow-400">👋</span>
+                    </Link>
+                  </motion.li>
+                </motion.ul>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );

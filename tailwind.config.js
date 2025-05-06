@@ -7,7 +7,19 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'sans': ['PP Neue Montreal', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        'serif': ['Right Serif', 'Georgia', 'serif'],
+        'montreal': ['PP Neue Montreal', 'sans-serif'],
+        'rightserif': ['Right Serif', 'serif'],
+      },
+      fontWeight: {
+        'book': 400,
+        'regular': 500,
+        'bold': 700,
+      }
+    },
   },
   plugins: [
     typographyPlugin,
