@@ -7,9 +7,9 @@ export default function About() {
   
   return (
     <Layout>
-      <section className="py-12 md:py-16">
+      <section className="py-2">
         <div className="mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="mx-auto">
             <div className="flex flex-col md:flex-row gap-8 md:gap-12 mb-16">
               <div className="md:w-2/3">
                 <p className="text-xl leading-relaxed mb-12">
@@ -62,6 +62,8 @@ export default function About() {
                   {aboutData.profileImage && (
                     <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden">
                       <Image
+                        width={1000}
+                        height={1000}
                         src={aboutData.profileImage}
                         alt="Eldhose Kuriyan"
                         style={{ 
