@@ -7,14 +7,11 @@ export default function Projects() {
   
   return (
     <Layout>
-      <section className="py-12 md:py-20">
-        <div className=" mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-10 text-center">
-            Projects
-          </h1>
+      <section className="py-2 md:py-4">
+        <div className="mx-auto px-2 md:px-4">
           
           {projects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
               {projects.map((project) => (
                 <ProjectCard
                   key={project.slug}

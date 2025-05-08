@@ -1,5 +1,6 @@
 import Layout from '../../../components/Layout';
 import ProjectMedia from '../../../components/ProjectMedia';
+import ExpandableSummary from '../../../components/ExpandableSummary';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
 import { ProjectMediaItem, ProjectImageItem, ProjectVideoItem, ProjectData } from '../../../lib/types';
 
@@ -82,69 +83,64 @@ export default async function Project(
   return (
     <Layout>
       <article className="">
-        
-          <div className="mx-auto">
-            {/* Hero Media (Image or Video) */}
-            {heroMediaSrc && (
-              <div className="">
-                <ProjectMedia
-                  type={heroMediaType}
-                  src={heroMediaSrc}
-                  alt={projectData.title}
-                  hasAudio={heroMediaType === 'video' ? heroHasAudio : undefined}
-                />
-              </div>
-            )}
-            
-            <div className="flex flex-col px-4">
-              {/* Project Title */}
-            <h1 className="text-3xl font-normal mb-6">{projectData.title}</h1>
-            
-            {/* Project Info */}
-            <div className="grid grid-cols-2 mb-12">
-              <div>
-                <h3 className="text-sm font-normal text-gray-500 mb-2">Services</h3>
-                <div className="text-lg">
-                  {projectData.services.map((service, index) => (
-                    <div key={index}>{service}</div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-normal text-gray-500 mb-2">Year</h3>
-                <div className="text-lg">{projectData.year}</div>
-              </div>
-            </div>
-            
-            {/* Project Summary */}
-            <div className="mb-12">
-              <p className="text-xl leading-relaxed mb-6">
-                {projectData.shortSummary}
-              </p>
-              <div 
-                className="prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: mainSummaryHtml }} 
+        <div className="mx-auto">
+          {/* Hero Media (Image or Video) - Full Width */}
+          {heroMediaSrc && (
+            <div className="w-full">
+              <ProjectMedia
+                type={heroMediaType}
+                src={heroMediaSrc}
+                alt={projectData.title}
+                hasAudio={heroMediaType === 'video' ? heroHasAudio : undefined}
               />
             </div>
-            </div>
+          )}
+          
+          {/* Content container for 60/40 split */}
+          <div className="px-2 md:px-4 flex flex-col md:flex-row">
             
-            {/* Project Gallery - Combined Images and Videos */}
-            {sortedMedia.length > 0 && (
-              <div className="">
-                {sortedMedia.map((item, index) => (
-                  <ProjectMedia
-                    key={index}
-                    type={item.type}
-                    src={item.src}
-                    caption={item.caption}
-                    alt={`${projectData.title} ${item.type} ${index + 1}`}
-                    hasAudio={item.hasAudio}
-                  />
-                ))}
+              {/* Project Info */}
+              <div className="flex flex-col mb-12 md:w-3/5">
+                {/* Project Title */}
+              <h1 className="text-3xl font-normal my-6 md:my-8">{projectData.title}</h1>
+                <div className="grid grid-cols-2 pb-4">
+                  <h3 className="text-lg font-normal text-gray-500 mb-2">Services</h3>
+                  <div className="text-lg text-gray-500">
+                    {projectData.services.map((service, index) => (
+                      <div key={index}>{service}</div>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2">
+                  <h3 className="text-lg font-normal text-gray-500 mb-2">Year</h3>
+                  <div className="text-lg text-gray-500">{projectData.year}</div>
+                </div>
               </div>
-            )}
-            
+              <div className="md:w-2/5 lg:mt-24">
+              {/* Project Summary - Use ExpandableSummary component */}
+              <ExpandableSummary 
+                shortSummary={projectData.shortSummary} 
+                mainSummaryHtml={mainSummaryHtml} 
+              />
+            </div>
           </div>
+          
+          {/* Project Gallery - Combined Images and Videos - Full Width */}
+          {sortedMedia.length > 0 && (
+            <div className="w-full">
+              {sortedMedia.map((item, index) => (
+                <ProjectMedia
+                  key={index}
+                  type={item.type}
+                  src={item.src}
+                  caption={item.caption}
+                  alt={`${projectData.title} ${item.type} ${index + 1}`}
+                  hasAudio={item.hasAudio}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </article>
     </Layout>
   );

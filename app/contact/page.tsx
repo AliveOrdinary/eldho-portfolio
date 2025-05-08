@@ -7,14 +7,11 @@ export default function Contact() {
   
   return (
     <Layout>
-      <section className="py-12 md:py-20">
-        <div className=" mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            <h1 className="text-4xl font-bold mb-10 text-center">
-              {contactData.title}
-            </h1>
+      <section className="px-2 md:px-4">
+        <div className=" mx-auto ">
+          <div className=" mx-auto">
             
-            <div className="bg-white shadow-sm rounded-lg p-8">
+            <div className="bg-white">
               <div className="mb-8">
                 <h2 className="text-2xl font-semibold mb-6">Get in Touch</h2>
                 <p className="text-gray-600 mb-4">

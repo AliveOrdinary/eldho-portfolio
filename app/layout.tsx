@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Eldhose Kuriyan is an Art Director and Graphic Designer based in Toronto, specializing in branding, typography, and illustration.",
   keywords: ["Art Director", "Graphic Designer", "Branding", "Typography", "Illustration", "Toronto", "Portfolio"],
   authors: [{ name: "Eldhose Kuriyan" }],
-  creator: "Eldhose Kuriyan",
+  creator: "AliveOrdinary",
 };
 
 export default function RootLayout({

@@ -119,7 +119,7 @@ export default function Header({ navigation }: HeaderProps) {
   }, [isMenuOpen]);
 
   return (
-    <header className={`py-4 px-4 sticky top-0 bg-white z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
+    <header className={`md:py-4 py-2 md:px-4 px-2 sticky top-0 bg-white z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
       <div className="mx-auto flex items-center justify-between">
         {/* Logo/brand name - remains visible in both mobile and desktop */}
         <Link href="/" className="text-2xl font-montreal font-book relative h-8 w-56 flex items-center overflow-hidden z-30">
@@ -164,12 +164,12 @@ export default function Header({ navigation }: HeaderProps) {
               </li>
             ))}
             <li>
-              <Link
-                href="/contact"
+              <a
+                href="mailto:eldhosekuriyan@gmail.com"
                 className="text-gray-700 hover:text-black transition-colors"
               >
                 Let&apos;s connect <span className="text-yellow-400">👋</span>
-              </Link>
+              </a>
             </li>
           </ul>
         </nav>
@@ -243,13 +243,13 @@ export default function Header({ navigation }: HeaderProps) {
                     </motion.li>
                   ))}
                   <motion.li variants={menuItemVariants}>
-                    <Link
-                      href="/contact"
+                    <a
+                      href="mailto:eldhosekuriyan@gmail.com"
                       className="text-gray-800 hover:text-black inline-block"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Let&apos;s connect <span className="text-yellow-400">👋</span>
-                    </Link>
+                    </a>
                   </motion.li>
                 </motion.ul>
               </nav>

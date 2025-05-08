@@ -1,12 +1,12 @@
 ---
 title: Contact
-email: hello@portfolio.com
-phone: "+1 (555) 123-4567"
+email: eldhosekuriyan@gmail.com
+phone: "+1 (437) 559-2611"
 socialMedia:
   - platform: Instagram
-    url: https://instagram.com/portfoliodesign
+    url: https://instagram.com/eldhosekuriyan
   - platform: LinkedIn
-    url: https://linkedin.com/in/portfoliodesign
+    url: https://linkedin.com/in/eldhosekuriyan
   - platform: Behance
-    url: https://behance.net/portfoliodesign
+    url: https://behance.net/eldhosekuriyan
 --- 

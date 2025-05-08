@@ -10,8 +10,9 @@ export default function About() {
       <section className="py-2">
         <div className="mx-auto px-4">
           <div className="mx-auto">
-            <div className="flex flex-col md:flex-row gap-8 md:gap-12 mb-16">
-              <div className="md:w-2/3">
+            <div className="flex flex-col md:flex-row mb-16">
+              <div className="md:w-3/5">
+                <div className="md:w-4/5">
                 <p className="text-xl leading-relaxed mb-12">
                   {aboutData.bio}
                 </p>
@@ -55,9 +56,10 @@ export default function About() {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
               
-              <div className="md:w-1/3">
+              <div className="md:w-2/5">
                 <div className="sticky top-8">
                   {aboutData.profileImage && (
                     <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden">
