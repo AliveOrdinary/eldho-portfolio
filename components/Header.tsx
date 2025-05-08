@@ -83,6 +83,13 @@ const menuItemVariants = {
   }
 };
 
+// Variants for the menu button icons (hamburger/close)
+const menuIconVariants = {
+  initial: { opacity: 0, scale: 0.8, rotate: -30 },
+  animate: { opacity: 1, scale: 1, rotate: 0, transition: { duration: 0.2, ease: "easeOut" } },
+  exit: { opacity: 0, scale: 0.8, rotate: 30, transition: { duration: 0.2, ease: "easeIn" } },
+};
+
 const fullName = "Eldhose Kuriyan";
 const targetLength = 5; // "Eldho" is 5 letters
 
@@ -174,27 +181,58 @@ export default function Header({ navigation }: HeaderProps) {
           </ul>
         </nav>
 
-        {/* Hamburger button - visible only on mobile and when menu is closed */}
+        {/* Unified Menu Button (Hamburger/Close) */}
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className={`md:hidden flex items-center justify-center w-12 h-12 z-30 ${isMenuOpen ? 'invisible' : 'visible'}`}
-          aria-label="Open menu"
+          className={`md:hidden flex items-center justify-center w-12 h-12 z-30 relative`} // Added relative for icon positioning
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
+          <AnimatePresence initial={false} mode="wait">
+            {!isMenuOpen ? (
+              <motion.svg
+                key="hamburger"
+                variants={menuIconVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className="absolute" // Position icon within button
+              >
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </motion.svg>
+            ) : (
+              <motion.svg
+                key="close"
+                variants={menuIconVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className="absolute" // Position icon within button
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </motion.svg>
+            )}
+          </AnimatePresence>
         </button>
 
         {/* Mobile menu overlay */}
@@ -207,28 +245,6 @@ export default function Header({ navigation }: HeaderProps) {
               variants={menuVariants}
               className="fixed inset-0 bg-white z-20 pt-24 px-8 flex flex-col"
             >
-              {/* Close button in the right corner of mobile menu */}
-              <button 
-                onClick={() => setIsMenuOpen(false)}
-                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center"
-                aria-label="Close menu"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-
               <nav>
                 <motion.ul className="flex flex-col space-y-6 text-3xl font-montreal font-book">
                   {navigation.map((item, index) => (
