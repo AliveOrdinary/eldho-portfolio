@@ -116,7 +116,7 @@ export default async function Project(
                   <div className="text-lg text-gray-500">{projectData.year}</div>
                 </div>
               </div>
-              <div className="md:w-2/5 lg:mt-24">
+              <div className="md:w-2/5  md:mt-24">
               {/* Project Summary - Use ExpandableSummary component */}
               <ExpandableSummary 
                 shortSummary={projectData.shortSummary} 

@@ -1,9 +1,13 @@
 @import "tailwindcss";
 @import "../styles/fonts.css";
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --background-rgb: 247, 247, 247;
   --font-sans: 'PP Neue Montreal', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-serif: 'Right Serif', Georgia, serif;
 }

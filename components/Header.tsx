@@ -126,10 +126,10 @@ export default function Header({ navigation }: HeaderProps) {
   }, [isMenuOpen]);
 
   return (
-    <header className={`md:py-4 py-2 md:px-4 px-2 sticky top-0 bg-white z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
+    <header className={`md:py-4 py-2 md:px-4 px-2 sticky top-0 bg-[#f7f7f7] z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
       <div className="mx-auto flex items-center justify-between">
-        {/* Logo/brand name - remains visible in both mobile and desktop */}
-        <Link href="/" className="text-2xl font-montreal font-book relative h-8 w-56 flex items-center overflow-hidden z-30">
+        {/* Logo/brand name - updated font */}
+        <Link href="/" className="text-2xl font-rightserif font-book relative h-8 w-56 flex items-center overflow-hidden z-30">
           <div className="absolute inset-0 flex items-center justify-start">
             {/* Split the full name into individual letters */}
             <motion.div
@@ -243,7 +243,7 @@ export default function Header({ navigation }: HeaderProps) {
               animate="open"
               exit="closed"
               variants={menuVariants}
-              className="fixed inset-0 bg-white z-20 pt-24 px-8 flex flex-col"
+              className="fixed inset-0 bg-custom-bg z-20 pt-24 px-8 flex flex-col"
             >
               <nav>
                 <motion.ul className="flex flex-col space-y-6 text-3xl font-montreal font-book">

@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        'custom-bg': '#f7f7f7'
+      },
       fontFamily: {
         'sans': ['PP Neue Montreal', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         'serif': ['Right Serif', 'Georgia', 'serif'],
