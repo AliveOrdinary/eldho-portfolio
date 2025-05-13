@@ -243,7 +243,7 @@ export default function Header({ navigation }: HeaderProps) {
               animate="open"
               exit="closed"
               variants={menuVariants}
-              className="fixed inset-0 bg-custom-bg z-20 pt-24 px-8 flex flex-col"
+              className="fixed inset-0 bg-[#f7f7f7] z-20 pt-24 px-8 flex flex-col"
             >
               <nav>
                 <motion.ul className="flex flex-col space-y-6 text-3xl font-montreal font-book">
