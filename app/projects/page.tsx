@@ -12,16 +12,15 @@ export default function Projects() {
           
           {projects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-              {projects.map((project) => (
+              {projects.map((project, index) => (
                 <ProjectCard
                   key={project.slug}
                   title={project.title}
                   slug={project.slug}
                   featuredImage={project.featuredImage}
                   featuredVideo={project.featuredVideo}
-                  shortSummary={project.shortSummary}
-                  year={project.year}
-                  services={project.services}
+                  priority={index < 4}
+                  index={index}
                 />
               ))}
             </div>

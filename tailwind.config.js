@@ -18,8 +18,11 @@ module.exports = {
         'rightserif': ['Right Serif', 'serif'],
       },
       fontWeight: {
+        'thin': 100,
         'book': 400,
-        'regular': 500,
+        'normal': 400,
+        'medium': 500,
+        'semibold': 600,
         'bold': 700,
       }
     },

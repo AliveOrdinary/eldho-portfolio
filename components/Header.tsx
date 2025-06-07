@@ -159,7 +159,7 @@ export default function Header({ navigation }: HeaderProps) {
 
         {/* Desktop navigation - hidden on mobile */}
         <nav className="hidden md:block">
-          <ul className="flex space-x-8 font-montreal font-regular">
+          <ul className="flex space-x-8 font-montreal font-medium">
             {navigation.map((item, index) => (
               <li key={index}>
                 <Link
@@ -184,7 +184,7 @@ export default function Header({ navigation }: HeaderProps) {
         {/* Unified Menu Button (Hamburger/Close) */}
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className={`md:hidden flex items-center justify-center w-12 h-12 z-30 relative`} // Added relative for icon positioning
+          className="md:hidden flex items-center justify-center w-12 h-12 z-30 relative" // Added relative for icon positioning
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         >
           <AnimatePresence initial={false} mode="wait">
@@ -206,9 +206,9 @@ export default function Header({ navigation }: HeaderProps) {
                 strokeLinejoin="round"
                 className="absolute" // Position icon within button
               >
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
               </motion.svg>
             ) : (
               <motion.svg
@@ -228,8 +228,8 @@ export default function Header({ navigation }: HeaderProps) {
                 strokeLinejoin="round"
                 className="absolute" // Position icon within button
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </motion.svg>
             )}
           </AnimatePresence>

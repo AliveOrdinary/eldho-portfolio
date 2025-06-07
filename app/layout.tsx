@@ -1,17 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Eldho | Art Director & Graphic Designer",
@@ -28,9 +17,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <head>
+        <link 
+          rel="preload" 
+          href="/fonts/PPNeueMontreal-Book.otf" 
+          as="font" 
+          type="font/otf" 
+          crossOrigin="" 
+        />
+        <link 
+          rel="preload" 
+          href="/fonts/PPNeueMontreal-Medium.otf" 
+          as="font" 
+          type="font/otf" 
+          crossOrigin="" 
+        />
+        <link 
+          rel="preload" 
+          href="/fonts/PPRightSerif-Medium.otf" 
+          as="font" 
+          type="font/otf" 
+          crossOrigin="" 
+        />
+      </head>
+      <body className="antialiased">
         {children}
         
         <Script src="https://identity.netlify.com/v1/netlify-identity-widget.js" />

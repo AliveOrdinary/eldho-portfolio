@@ -15,7 +15,8 @@ html {
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-  font-family: var(--font-sans);
+  font-family: 'PP Neue Montreal', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
 }
 
 /* Custom transitions */
@@ -36,4 +37,13 @@ a {
 img {
   -webkit-user-drag: none;
   user-drag: none;
+}
+
+/* Debug font loading - remove in production */
+.font-montreal {
+  font-family: 'PP Neue Montreal', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.font-rightserif {
+  font-family: 'Right Serif', Georgia, serif !important;
 }

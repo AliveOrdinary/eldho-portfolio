@@ -1,57 +1,50 @@
 import Layout from '../../../components/Layout';
 import ProjectMedia from '../../../components/ProjectMedia';
+import OptimizedImage from '../../../components/OptimizedImage';
 import ExpandableSummary from '../../../components/ExpandableSummary';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
 import { ProjectMediaItem, ProjectImageItem, ProjectVideoItem, ProjectData } from '../../../lib/types';
 
-// Helper function to combine and sort media items
-// Use ProjectData type directly
+/**
+ * Combines and sorts project images and videos into a unified media array
+ * @param projectData - The project data containing images and videos
+ * @returns Sorted array of media items
+ */
 function combineAndSortMedia(projectData: ProjectData): ProjectMediaItem[] { 
   const combinedMedia: ProjectMediaItem[] = [];
   
   // Add images if they exist
-  if (projectData.projectImages && projectData.projectImages.length > 0) {
+  if (projectData.projectImages?.length) {
     projectData.projectImages.forEach((item: ProjectImageItem, index: number) => {
       combinedMedia.push({
         type: 'image',
         src: item.image,
         caption: item.caption,
-        order: item.order || index + 1 
+        order: item.order ?? index + 1 
       });
     });
   }
   
-  // Add videos if they exist, passing hasAudio
-  if (projectData.projectVideos && projectData.projectVideos.length > 0) {
+  // Add videos if they exist
+  if (projectData.projectVideos?.length) {
     projectData.projectVideos.forEach((item: ProjectVideoItem, index: number) => {
       combinedMedia.push({
         type: 'video',
         src: item.video,
         caption: item.caption,
-        hasAudio: item.hasAudio || false, 
-        order: item.order || (projectData.projectImages?.length || 0) + index + 1 
+        hasAudio: item.hasAudio ?? false, 
+        order: item.order ?? (projectData.projectImages?.length ?? 0) + index + 1 
       });
     });
   }
   
-  // Adjust this if you have a unified projectMedia field
-  // This part seems redundant if projectImages/projectVideos cover all media
-  /*
-  if (projectData.projectMedia && projectData.projectMedia.length > 0) {
-     projectData.projectMedia.forEach(item => {
-         if(item.type === 'video' && !item.hasOwnProperty('hasAudio')) {
-             item.hasAudio = false; // Default if missing
-         }
-     });
-    combinedMedia.push(...projectData.projectMedia);
-  }
-  */
-  
   // Sort by order field
-  return combinedMedia.sort((a, b) => (a.order || 0) - (b.order || 0)); // Add default for order
+  return combinedMedia.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
-// Correct way to type this in Next.js 15
+/**
+ * Generate static params for all projects at build time
+ */
 export function generateStaticParams() {
   const projects = getAllProjects();
   return projects.map((project) => ({
@@ -59,21 +52,22 @@ export function generateStaticParams() {
   }));
 }
 
-// Use proper typing with correct params structure
+/**
+ * Project detail page component
+ */
 export default async function Project(
   props: {
     params: Promise<{ slug: string }>;
   }
 ) {
   const params = await props.params;
-  const slug = params.slug;
-  // Use ProjectData type directly
-  const projectData = getProjectData(slug) as ProjectData; 
+  const { slug } = params;
+  
+  const projectData = getProjectData(slug);
   const mainSummaryHtml = await getMarkdownContent(projectData.mainSummary);
   
   // Determine which media to show as hero (video takes precedence)
   const hasHeroVideo = !!projectData.featuredVideo;
-  const heroMediaType = hasHeroVideo ? 'video' : 'image';
   const heroMediaSrc = hasHeroVideo ? projectData.featuredVideo : projectData.featuredImage;
   const heroHasAudio = projectData.featuredVideoHasAudio || false; 
   
@@ -87,12 +81,23 @@ export default async function Project(
           {/* Hero Media (Image or Video) - Full Width */}
           {heroMediaSrc && (
             <div className="w-full">
-              <ProjectMedia
-                type={heroMediaType}
-                src={heroMediaSrc}
-                alt={projectData.title}
-                hasAudio={heroMediaType === 'video' ? heroHasAudio : undefined}
-              />
+              {hasHeroVideo ? (
+                <ProjectMedia
+                  type="video"
+                  src={heroMediaSrc}
+                  alt={projectData.title}
+                  hasAudio={heroHasAudio}
+                />
+              ) : (
+                <OptimizedImage
+                  src={heroMediaSrc}
+                  alt={projectData.title}
+                  priority={true}
+                  aspectRatio="video"
+                  quality={95}
+                  sizes="100vw"
+                />
+              )}
             </div>
           )}
           
@@ -129,14 +134,29 @@ export default async function Project(
           {sortedMedia.length > 0 && (
             <div className="w-full">
               {sortedMedia.map((item, index) => (
-                <ProjectMedia
-                  key={index}
-                  type={item.type}
-                  src={item.src}
-                  caption={item.caption}
-                  alt={`${projectData.title} ${item.type} ${index + 1}`}
-                  hasAudio={item.hasAudio}
-                />
+                <div key={index} className="mb-4">
+                  {item.type === 'video' ? (
+                    <ProjectMedia
+                      type="video"
+                      src={item.src}
+                      caption={item.caption}
+                      alt={`${projectData.title} video ${index + 1}`}
+                      hasAudio={item.hasAudio}
+                    />
+                  ) : (
+                    <OptimizedImage
+                      src={item.src}
+                      alt={`${projectData.title} image ${index + 1}`}
+                      priority={index < 2}
+                      aspectRatio="video"
+                      quality={85}
+                      sizes="100vw"
+                    />
+                  )}
+                  {item.caption && (
+                    <p className="text-sm text-gray-600 mt-2 px-2 md:px-4">{item.caption}</p>
+                  )}
+                </div>
               ))}
             </div>
           )}

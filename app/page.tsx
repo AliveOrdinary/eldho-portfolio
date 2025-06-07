@@ -21,16 +21,15 @@ export default function Home() {
           {featuredProjects.length > 0 && (
             <div>
               <div className="w-full">
-                {featuredProjects.map((project) => (
+                {featuredProjects.map((project, index) => (
                   <ProjectCard
                     key={project.slug}
                     title={project.title}
                     slug={project.slug}
                     featuredImage={project.featuredImage}
                     featuredVideo={project.featuredVideo}
-                    shortSummary={project.shortSummary}
-                    year={project.year}
-                    services={project.services}
+                    priority={index === 0}
+                    index={index}
                   />
                 ))}
               </div>

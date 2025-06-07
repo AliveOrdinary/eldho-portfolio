@@ -7,10 +7,10 @@ interface ProjectMediaProps {
   type: 'image' | 'video';
   src: string;
   alt?: string;
-  caption?: string; // Re-add caption if needed, or remove if unused
-  aspectRatio?: string; // Re-add if needed, or remove if unused
+  caption?: string | undefined;
+  aspectRatio?: string;
   onClick?: (event: MouseEvent<HTMLDivElement>) => void;
-  hasAudio?: boolean; // Add hasAudio prop
+  hasAudio?: boolean | undefined;
 }
 
 export default function ProjectMedia({ 
@@ -43,9 +43,13 @@ export default function ProjectMedia({
             src={src}
             alt={alt || 'Project media'}
             fill
-            sizes="w-full h-full"
-            className="object-fill"
-            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+            className="object-cover"
+            priority={false}
+            loading="lazy"
+            quality={85}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
           />
         </div>
       ) : (
