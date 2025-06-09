@@ -134,7 +134,7 @@ export default async function Project(
           {sortedMedia.length > 0 && (
             <div className="w-full">
               {sortedMedia.map((item, index) => (
-                <div key={index} className="mb-4">
+                <div key={index} className="">
                   {item.type === 'video' ? (
                     <ProjectMedia
                       type="video"
