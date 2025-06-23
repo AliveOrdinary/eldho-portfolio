@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import ErrorBoundary from './ErrorBoundary';
+import PageTransition from './PageTransition';
 import { getGlobalData, getContactPageData } from '../lib/markdown';
 import { DEFAULT_NAVIGATION } from '../lib/constants';
 
@@ -44,7 +45,9 @@ export default function Layout({ children }: LayoutProps) {
       
       <main className="flex-grow">
         <ErrorBoundary>
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </ErrorBoundary>
       </main>
       
@@ -53,4 +56,4 @@ export default function Layout({ children }: LayoutProps) {
       </ErrorBoundary>
     </div>
   );
-} 
+}
