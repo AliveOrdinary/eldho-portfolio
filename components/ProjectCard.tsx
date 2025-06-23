@@ -52,7 +52,7 @@ export default function ProjectCard({
             priority={priority || index < 2}
             className="transition-transform duration-300 group-hover:scale-[1.02]"
             aspectRatio="video"
-            quality={90}
+            quality={95}
           />
         )}
       </div>

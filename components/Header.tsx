@@ -99,15 +99,24 @@ export default function Header({ navigation }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+    
     const handleScroll = () => {
-      const scrolled = window.scrollY > 50;
-      setIsScrolled(scrolled);
-      if (scrolled && !hasScrolledOnce) {
-        setHasScrolledOnce(true);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 50;
+          setIsScrolled(scrolled);
+          if (scrolled && !hasScrolledOnce) {
+            setHasScrolledOnce(true);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
+    
     handleScroll();
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };

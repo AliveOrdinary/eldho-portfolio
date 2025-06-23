@@ -1,6 +1,6 @@
 import Layout from '../../../components/Layout';
 import ProjectMedia from '../../../components/ProjectMedia';
-import OptimizedImage from '../../../components/OptimizedImage';
+import HighResImageViewer from '../../../components/HighResImageViewer';
 import ExpandableSummary from '../../../components/ExpandableSummary';
 import { getAllProjects, getProjectData, getMarkdownContent } from '../../../lib/markdown';
 import { ProjectMediaItem, ProjectImageItem, ProjectVideoItem, ProjectData } from '../../../lib/types';
@@ -43,6 +43,17 @@ function combineAndSortMedia(projectData: ProjectData): ProjectMediaItem[] {
 }
 
 /**
+ * Extract all image sources from media items
+ * @param mediaItems - Array of media items
+ * @returns Array of image sources
+ */
+function extractImageSources(mediaItems: ProjectMediaItem[]): string[] {
+  return mediaItems
+    .filter(item => item.type === 'image')
+    .map(item => item.src);
+}
+
+/**
  * Generate static params for all projects at build time
  */
 export function generateStaticParams() {
@@ -73,6 +84,17 @@ export default async function Project(
   
   // Combine and sort all media items
   const sortedMedia = combineAndSortMedia(projectData);
+  
+  // Extract all image sources for the image viewer navigation
+  const allProjectImages = extractImageSources(sortedMedia);
+  
+  // If there's a hero image and it's not a video, add it to the beginning of the array if not already included
+  if (!hasHeroVideo && heroMediaSrc && !allProjectImages.includes(heroMediaSrc)) {
+    allProjectImages.unshift(heroMediaSrc);
+  }
+  
+  // Ensure we have at least an empty array if no images are found
+  const projectImageArray = allProjectImages.length > 0 ? allProjectImages : [];
 
   return (
     <Layout>
@@ -89,13 +111,15 @@ export default async function Project(
                   hasAudio={heroHasAudio}
                 />
               ) : (
-                <OptimizedImage
+                <HighResImageViewer
                   src={heroMediaSrc}
                   alt={projectData.title}
                   priority={true}
                   aspectRatio="video"
-                  quality={95}
+                  quality={100}
                   sizes="100vw"
+                  allProjectImages={projectImageArray}
+                  currentIndex={0}
                 />
               )}
             </div>
@@ -144,13 +168,15 @@ export default async function Project(
                       hasAudio={item.hasAudio}
                     />
                   ) : (
-                    <OptimizedImage
+                    <HighResImageViewer
                       src={item.src}
                       alt={`${projectData.title} image ${index + 1}`}
                       priority={index < 2}
                       aspectRatio="video"
-                      quality={85}
+                      quality={95}
                       sizes="100vw"
+                      allProjectImages={projectImageArray}
+                      currentIndex={projectImageArray.indexOf(item.src)}
                     />
                   )}
                   {item.caption && (

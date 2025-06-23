@@ -1,8 +1,11 @@
 import Link from 'next/link';
-import { getContactPageData } from '../lib/markdown';
+import { ContactPageData } from '../lib/types';
 
-export default function Footer(): React.ReactNode {
-  const contactData = getContactPageData();
+interface FooterProps {
+  contactData: ContactPageData;
+}
+
+export default function Footer({ contactData }: FooterProps): React.ReactNode {
   return (
     <footer className="py-2 md:py-4 border-t border-gray-100">
       <div className=" mx-auto px-2 md:px-4">
@@ -10,27 +13,19 @@ export default function Footer(): React.ReactNode {
           <div>
             <h3 className="text-sm font-normal text-gray-500 mb-2">Contact</h3>
             <p className="text-gray-700">{contactData.email}</p>
-            <p className="text-gray-700">{contactData.phone}</p>
+            {contactData.phone && <p className="text-gray-700">{contactData.phone}</p>}
           </div>
           
           <div>
             <h3 className="text-sm font-normal text-gray-500 mb-2">Social</h3>
             <ul className="space-y-1">
-              <li>
-                <Link href={contactData.socialMedia[1].url} className="text-gray-700 hover:text-black transition-colors">
-                  LinkedIn
-                </Link>
-              </li>
-              <li>
-                <Link href={contactData.socialMedia[0].url} className="text-gray-700 hover:text-black transition-colors">
-                  Instagram
-                </Link>
-              </li>
-              <li>
-                <Link href={contactData.socialMedia[2].url} className="text-gray-700 hover:text-black transition-colors">
-                  Behance
-                </Link>
-              </li>
+              {contactData.socialMedia.map((social, index) => (
+                <li key={index}>
+                  <Link href={social.url} className="text-gray-700 hover:text-black transition-colors">
+                    {social.platform}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

@@ -9,9 +9,9 @@ export const SITE_CONFIG = {
 // Image optimization constants
 export const IMAGE_CONFIG = {
   QUALITY: {
-    HERO: 95,
-    GALLERY: 85,
-    THUMBNAIL: 80
+    HERO: 100,
+    GALLERY: 95,
+    THUMBNAIL: 90
   },
   SIZES: {
     HERO: '100vw',
