@@ -136,9 +136,9 @@ export default function Header({ navigation }: HeaderProps) {
 
   return (
     <header className={`md:py-4 py-2 md:px-4 px-2 sticky top-0 bg-[#f7f7f7] z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
-      <div className="mx-auto flex items-center justify-between">
+      <div className="mx-auto flex items-center justify-between md:grid md:grid-cols-[3fr_2fr] md:gap-4">
         {/* Logo/brand name - updated font */}
-        <Link href="/" className="text-2xl font-rightserif font-book relative h-8 w-56 flex items-center overflow-hidden z-30">
+        <Link href="/" className="text-2xl font-rightserif font-book relative h-8 w-56 md:w-auto flex items-center overflow-hidden z-30">
           <div className="absolute inset-0 flex items-center justify-start">
             {/* Split the full name into individual letters */}
             <motion.div
@@ -167,8 +167,8 @@ export default function Header({ navigation }: HeaderProps) {
         </Link>
 
         {/* Desktop navigation - hidden on mobile */}
-        <nav className="hidden md:block">
-          <ul className="flex space-x-8 font-montreal font-medium">
+        <nav className="hidden md:block w-full">
+          <ul className="flex justify-between font-montreal font-medium w-full">
             {navigation.map((item, index) => (
               <li key={index}>
                 <Link
