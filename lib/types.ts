@@ -27,9 +27,9 @@ export interface ProjectData {
   featuredVideo?: string;
   featuredVideoHasAudio?: boolean;
   shortSummary: string;
-  mainSummary: string;
+  mainSummary?: string;
   year: number;
-  services: string[];
+  services?: string[];
   projectImages?: ProjectImageItem[];
   projectVideos?: ProjectVideoItem[];
   featured: boolean;

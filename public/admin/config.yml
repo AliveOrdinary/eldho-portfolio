@@ -18,13 +18,15 @@ collections:
       - { label: "Featured Image", name: "featuredImage", widget: "image", required: false }
       - { label: "Featured Video", name: "featuredVideo", widget: "file", required: false }
       - { label: "Featured Video Has Audio?", name: "featuredVideoHasAudio", widget: "boolean", default: false, required: false }
-      - { label: "Short Summary", name: "shortSummary", widget: "string", pattern: ['.{1,160}', "Must be 160 characters or less"] }
-      - { label: "Main Summary", name: "mainSummary", widget: "markdown" }
+      - { label: "Short Summary", name: "shortSummary", widget: "string", pattern: ['.{1,160}', "Must be 160 characters or less"], hint: "Brief description (required for all types)" }
+      - { label: "Main Summary", name: "mainSummary", widget: "markdown", required: false, hint: "Detailed description (optional for Photography/Illustration)" }
       - { label: "Year", name: "year", widget: "number" }
-      - { label: "Services", name: "services", widget: "select", multiple: true, options: ["Branding", "Web Design", "Print", "Packaging", "UI/UX", "Illustration", "Naming", "Art Direction", "Motion Graphics", "Photography"] }
+      - { label: "Services", name: "services", widget: "select", multiple: true, options: ["Branding", "Web Design", "Print", "Packaging", "UI/UX", "Illustration", "Naming", "Art Direction", "Motion Graphics", "Photography"], required: false, hint: "Not required for Photography/Illustration" }
       - label: "Project Images"
         name: "projectImages"
         widget: "list"
+        required: false
+        hint: "Add multiple images (optional for simple Photography/Illustration posts)"
         fields:
           - { label: "Image", name: "image", widget: "image" }
           - { label: "Caption", name: "caption", widget: "string", required: false }
@@ -33,6 +35,7 @@ collections:
         name: "projectVideos"
         widget: "list"
         required: false
+        hint: "Add videos (mainly for Branding projects)"
         fields:
           - { label: "Video", name: "video", widget: "file" }
           - { label: "Caption", name: "caption", widget: "string", required: false }
