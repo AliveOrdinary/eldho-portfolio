@@ -49,10 +49,14 @@ export default function UnsplashGallery({
   };
 
   useEffect(() => {
-    if (initialPhotos.length === 0) {
-      loadPhotos(1);
-    }
-  }, [username]);
+    const loadInitialPhotos = async () => {
+      if (initialPhotos.length === 0) {
+        await loadPhotos(1);
+      }
+    };
+    
+    loadInitialPhotos();
+  }, [username, initialPhotos.length]);
 
   return (
     <div className="w-full">

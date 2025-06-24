@@ -51,12 +51,16 @@ export default function MixedPhotographyGallery({
   };
 
   useEffect(() => {
-    if (username) {
-      setPage(1);
-      setUnsplashPhotos([]);
-      setError(null);
-      loadUnsplashPhotos(1, true);
-    }
+    const loadInitialPhotos = async () => {
+      if (username) {
+        setPage(1);
+        setUnsplashPhotos([]);
+        setError(null);
+        await loadUnsplashPhotos(1, true);
+      }
+    };
+    
+    loadInitialPhotos();
   }, [username]);
 
   return (

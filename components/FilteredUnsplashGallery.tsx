@@ -23,7 +23,6 @@ export default function FilteredUnsplashGallery({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [totalPages, setTotalPages] = useState(0);
 
   const loadPhotos = async (currentPage: number, reset = false) => {
     setLoading(true);
@@ -32,7 +31,6 @@ export default function FilteredUnsplashGallery({
     try {
       const response = await searchUserPhotos(username, searchQuery, currentPage, photosPerPage);
       setHasMore(currentPage < response.total_pages);
-      setTotalPages(response.total_pages);
 
       if (reset) {
         setPhotos(response.results);
@@ -53,9 +51,13 @@ export default function FilteredUnsplashGallery({
   };
 
   useEffect(() => {
-    setPage(1);
-    setPhotos([]);
-    loadPhotos(1, true);
+    const loadInitialPhotos = async () => {
+      setPage(1);
+      setPhotos([]);
+      await loadPhotos(1, true);
+    };
+    
+    loadInitialPhotos();
   }, [username, searchQuery]);
 
   return (
