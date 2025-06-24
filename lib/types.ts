@@ -22,6 +22,7 @@ export interface ProjectMediaItem {
 export interface ProjectData {
   title: string;
   slug: string;
+  category?: 'Branding' | 'Photography' | 'Illustration';
   featuredImage?: string;
   featuredVideo?: string;
   featuredVideoHasAudio?: boolean;

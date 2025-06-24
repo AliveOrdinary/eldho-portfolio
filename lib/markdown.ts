@@ -145,4 +145,16 @@ export function getProjectData(slug: string): ProjectData {
 export function getFeaturedProjects(): ProjectData[] {
   const allProjects = getAllProjects();
   return allProjects.filter(project => project.featured);
+}
+
+/**
+ * Get projects by category
+ */
+export function getProjectsByCategory(category: 'Branding' | 'Photography' | 'Illustration'): ProjectData[] {
+  const allProjects = getAllProjects();
+  return allProjects.filter(project => {
+    // Default to 'Branding' for existing projects without category field
+    const projectCategory = project.category || 'Branding';
+    return projectCategory === category;
+  });
 } 
