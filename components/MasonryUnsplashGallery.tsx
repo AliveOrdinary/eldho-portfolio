@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchUserPhotos, UnsplashPhoto } from '@/lib/unsplash';
 import OptimizedImage from './OptimizedImage';
 import LoadingSpinner from './LoadingSpinner';
@@ -24,7 +24,7 @@ export default function MasonryUnsplashGallery({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadPhotos = async (currentPage: number, reset = false) => {
+  const loadPhotos = useCallback(async (currentPage: number, reset = false) => {
     setLoading(true);
     setError(null);
 
@@ -49,7 +49,7 @@ export default function MasonryUnsplashGallery({
     } finally {
       setLoading(false);
     }
-  };
+  }, [username, photosPerPage]);
 
   const loadMore = () => {
     const nextPage = page + 1;
@@ -68,7 +68,7 @@ export default function MasonryUnsplashGallery({
     };
     
     loadInitialPhotos();
-  }, [username]);
+  }, [username, loadPhotos]);
 
   // Smart grouping based on image orientation
   const createSmartGroups = (photos: PhotoWithLayout[]) => {
@@ -84,7 +84,7 @@ export default function MasonryUnsplashGallery({
         const group = {
           type: 'mixed' as const,
           photos: [currentPhoto],
-          patternType: groupIndex % 2 === 0 ? 'A' : 'B' // Alternate patterns
+          patternType: (groupIndex % 2 === 0 ? 'A' : 'B') as 'A' | 'B' // Alternate patterns
         };
         
         // Add up to 2 more photos for the horizontal slots
@@ -118,7 +118,7 @@ export default function MasonryUnsplashGallery({
 
   const photoGroups = createSmartGroups(photos);
 
-  const renderGroup = (group: any, groupIndex: number) => {
+  const renderGroup = (group: { type: 'mixed' | 'horizontal'; photos: PhotoWithLayout[]; patternType?: 'A' | 'B' }, groupIndex: number) => {
     if (group.photos.length === 0) return null;
 
     if (group.type === 'horizontal') {
@@ -130,7 +130,7 @@ export default function MasonryUnsplashGallery({
             group.photos.length === 2 ? 'grid-cols-1 lg:grid-cols-2' :
             'grid-cols-1 lg:grid-cols-3'
           }`}>
-            {group.photos.map((photo: PhotoWithLayout, photoIndex: number) => (
+            {group.photos.map((photo: PhotoWithLayout, _photoIndex: number) => (
               <div key={photo.id} className="relative h-[300px] group">
                 <OptimizedImage
                   src={photo.urls.regular}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchUserPhotos, UnsplashPhoto } from '@/lib/unsplash';
 import OptimizedImage from './OptimizedImage';
 import LoadingSpinner from './LoadingSpinner';
@@ -22,7 +22,7 @@ export default function UnsplashGallery({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadPhotos = async (currentPage: number, reset = false) => {
+  const loadPhotos = useCallback(async (currentPage: number, reset = false) => {
     setLoading(true);
     setError(null);
 
@@ -40,7 +40,7 @@ export default function UnsplashGallery({
     } finally {
       setLoading(false);
     }
-  };
+  }, [username, photosPerPage]);
 
   const loadMore = () => {
     const nextPage = page + 1;
@@ -56,7 +56,7 @@ export default function UnsplashGallery({
     };
     
     loadInitialPhotos();
-  }, [username, initialPhotos.length]);
+  }, [username, initialPhotos.length, loadPhotos]);
 
   return (
     <div className="w-full">

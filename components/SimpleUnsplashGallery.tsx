@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchUserPhotos, UnsplashPhoto } from '@/lib/unsplash';
-import OptimizedImage from './OptimizedImage';
 import LoadingSpinner from './LoadingSpinner';
 import HighResImageViewer from './HighResImageViewer';
 
@@ -20,7 +19,7 @@ export default function SimpleUnsplashGallery({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const loadPhotos = async (currentPage: number, reset = false) => {
+  const loadPhotos = useCallback(async (currentPage: number, reset = false) => {
     setLoading(true);
     setError(null);
 
@@ -38,7 +37,7 @@ export default function SimpleUnsplashGallery({
     } finally {
       setLoading(false);
     }
-  };
+  }, [username, photosPerPage]);
 
   const loadMore = () => {
     const nextPage = page + 1;
@@ -57,7 +56,7 @@ export default function SimpleUnsplashGallery({
     };
     
     loadInitialPhotos();
-  }, [username]);
+  }, [username, loadPhotos]);
 
   // Filter valid photos
   const validPhotos = photos.filter(photo => photo.urls.regular && photo.urls.full);
