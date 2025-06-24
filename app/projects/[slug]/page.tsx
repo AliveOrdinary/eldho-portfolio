@@ -75,7 +75,7 @@ export default async function Project(
   const { slug } = params;
   
   const projectData = getProjectData(slug);
-  const mainSummaryHtml = await getMarkdownContent(projectData.mainSummary);
+  const mainSummaryHtml = await getMarkdownContent(projectData.mainSummary || '');
   
   // Determine which media to show as hero (video takes precedence)
   const hasHeroVideo = !!projectData.featuredVideo;
@@ -135,7 +135,7 @@ export default async function Project(
                 <div className="grid grid-cols-2 pb-4">
                   <h3 className="text-lg font-normal text-gray-500 mb-2">Services</h3>
                   <div className="text-lg text-gray-500">
-                    {projectData.services.map((service, index) => (
+                    {projectData.services?.map((service, index) => (
                       <div key={index}>{service}</div>
                     ))}
                   </div>
