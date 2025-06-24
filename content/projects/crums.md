@@ -1,6 +1,7 @@
 ---
 title: Crums
 slug: crums
+category: Branding
 featuredImage: ""
 featuredVideo: /images/uploads/crums/comp-1.mp4
 featuredVideoHasAudio: true
