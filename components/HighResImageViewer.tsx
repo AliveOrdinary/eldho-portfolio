@@ -448,7 +448,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
           }}
         >
           <div 
-            className="modal-container relative w-full h-full flex items-center justify-center" 
+            className="modal-container relative w-full h-full flex items-center justify-center p-4" 
             onClick={handleBackgroundClick}
             onTouchEnd={(e) => {
               e.preventDefault();
@@ -456,10 +456,10 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
             }}
           >
             <div 
-              className="relative max-w-[90vw] max-h-[90vh] cursor-grab active:cursor-grabbing touch-none"
+              className="relative max-w-[90vw] max-h-[90vh] cursor-grab active:cursor-grabbing touch-none flex items-center justify-center"
               style={{
                 transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
-                transformOrigin: 'center'
+                transformOrigin: 'center center'
               }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
@@ -486,11 +486,12 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                 ref={imageRef}
                 src={currentImageSrc}
                 alt={alt}
-                className={`max-w-full max-h-full object-contain select-none transition-opacity duration-300 ${
+                className={`max-w-full max-h-full object-contain select-none transition-opacity duration-300 block ${
                   highResLoaded ? 'opacity-0' : 'opacity-100'
                 }`}
                 onLoad={handleImageLoad}
                 draggable={false}
+                style={{ margin: '0 auto' }}
               />
               
               {/* High-res overlay (loads on top when ready) */}
@@ -499,9 +500,10 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                 ref={highResImageRef}
                 src={getHighResUrl(currentImageSrc)}
                 alt={`${alt} (High Resolution)`}
-                className={`absolute inset-0 max-w-full max-h-full object-contain select-none transition-opacity duration-300 ${
+                className={`absolute inset-0 max-w-full max-h-full object-contain select-none transition-opacity duration-300 block ${
                   highResLoaded ? 'opacity-100' : 'opacity-0'
                 }`}
+                style={{ margin: '0 auto' }}
                 onLoad={(e) => {
                   handleImageLoad(e);
                   setHighResLoaded(true);

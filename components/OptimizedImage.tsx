@@ -28,6 +28,11 @@ export default function OptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Don't render if src is empty or invalid
+  if (!src || src.trim() === '') {
+    return null;
+  }
+
   const aspectRatioClasses = {
     video: 'aspect-video',
     square: 'aspect-square', 
