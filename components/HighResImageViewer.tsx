@@ -253,7 +253,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   
   const handlePinchEnd = useCallback(() => {
     setPinchDistance(0);
-    setInitialPinchZoom(1);
+    // Don't reset initialPinchZoom - let it maintain the current zoom level
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -606,7 +606,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
 
             {/* Mobile gesture hint */}
             {showMobileHint && (
-              <div className="md:hidden absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-4 py-3 rounded-lg text-sm z-50">
+              <div className="md:hidden absolute bottom-36 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-4 py-3 rounded-lg text-sm z-50">
                 <div className="text-center space-y-1">
                   <div>Tap sides to navigate</div>
                   <div>Pinch to zoom • Double tap to reset</div>
@@ -617,7 +617,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
             {/* Mobile close button only */}
             <button
               onClick={closeModal}
-              className="md:hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all z-50"
+              className="md:hidden absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all z-50"
               aria-label="Close image viewer"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
