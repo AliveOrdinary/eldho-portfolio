@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavigationItem {
@@ -12,42 +12,7 @@ interface HeaderProps {
   navigation: NavigationItem[];
 }
 
-const nameContainerVariants = {
-  animate: {
-    transition: {
-      staggerChildren: 0.02,
-    },
-  },
-  exit: {
-    transition: {
-      staggerChildren: 0.04,
-      staggerDirection: -1, // Right-to-left (from end to start)
-      delayChildren: 0.2, // Small delay before starting to remove letters
-    },
-  },
-};
 
-// Variants for letters that will disappear (letters after "Eldho")
-const disappearingLetterVariants = {
-  initial: { opacity: 1, y: 0 },
-  animate: { opacity: 1, y: 0 },
-  exit: { 
-    scaleX: 0,
-    opacity: 0,
-    transition: { 
-      type: "spring", 
-      damping: 12,
-      duration: 0.4
-    } 
-  },
-};
-
-// Variants for letters that will stay (letters of "Eldho")
-const stayingLetterVariants = {
-  initial: { opacity: 1, y: 0 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 1, y: 0 }, // No exit animation for these letters
-};
 
 // Mobile menu animation variants
 const menuVariants = {
@@ -91,12 +56,21 @@ const menuIconVariants = {
 };
 
 const fullName = "Eldhose Kuriyan";
-const targetLength = 5; // "Eldho" is 5 letters
 
 export default function Header({ navigation }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [eldhoWidth, setEldhoWidth] = useState<number | null>(null);
+  const eldhoRef = useRef<HTMLSpanElement>(null);
+
+  // Measure width of "Eldho" on mount
+  useEffect(() => {
+    if (eldhoRef.current) {
+      const width = eldhoRef.current.getBoundingClientRect().width;
+      setEldhoWidth(width);
+    }
+  }, []);
 
   useEffect(() => {
     let ticking = false;
@@ -137,33 +111,40 @@ export default function Header({ navigation }: HeaderProps) {
   return (
     <header className={`md:py-4 py-2 md:px-4 px-2 sticky top-0 bg-[#f7f7f7] z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
       <div className="mx-auto flex items-center justify-between md:grid md:grid-cols-[3fr_2fr] md:gap-4">
+        {/* Hidden element to measure "Eldho" width */}
+        <span 
+          ref={eldhoRef}
+          className="text-xl md:text-2xl font-rightserif font-book absolute opacity-0 pointer-events-none whitespace-nowrap"
+          aria-hidden="true"
+        >
+          Eldho
+        </span>
+
         {/* Logo/brand name - updated font */}
-        <Link href="/" className="text-2xl font-rightserif font-book relative h-8 w-56 md:w-auto flex items-center overflow-hidden z-30">
-          <div className="absolute inset-0 flex items-center justify-start">
-            {/* Split the full name into individual letters */}
-            <motion.div
-              variants={nameContainerVariants}
-              initial="animate"
-              animate="animate"
-              exit="exit"
-              className="flex"
-            >
+        <Link href="/" className="text-xl md:text-2xl font-rightserif font-book relative h-8 flex items-center z-30">
+          <motion.div
+            animate={{ 
+              width: hasScrolledOnce && eldhoWidth ? `${eldhoWidth}px` : 'auto',
+              transition: { 
+                duration: 0.6, 
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }
+            }}
+            className="overflow-hidden"
+          >
+            <div className="flex whitespace-nowrap">
               {fullName.split('').map((char, index) => {
-                // Determine if this letter should stay or go
-                const shouldStay = index < targetLength;
                 return (
-                  <motion.span
+                  <span
                     key={`${char}-${index}`}
-                    variants={shouldStay ? stayingLetterVariants : disappearingLetterVariants}
-                    animate={hasScrolledOnce && !shouldStay ? "exit" : "animate"}
                     style={{ display: 'inline-block' }}
                   >
                     {char === ' ' ? '\u00A0' : char}
-                  </motion.span>
+                  </span>
                 );
               })}
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         </Link>
 
         {/* Desktop navigation - hidden on mobile */}

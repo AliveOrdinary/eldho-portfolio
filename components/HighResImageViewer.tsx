@@ -40,9 +40,6 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
-  const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
-  const [, setIsSwipeGesture] = useState(false);
   const [lastTap, setLastTap] = useState(0);
   const [pinchDistance, setPinchDistance] = useState(0);
   const [initialPinchZoom, setInitialPinchZoom] = useState(1);
@@ -50,6 +47,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   const [highResLoaded, setHighResLoaded] = useState(false);
   const [isLoadingHighRes, setIsLoadingHighRes] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [showMobileHint, setShowMobileHint] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const highResImageRef = useRef<HTMLImageElement>(null);
@@ -123,10 +121,16 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
     setIsLoadingHighRes(true);
     triggerHapticFeedback('medium');
     
+    // Show mobile gesture hint on first open
+    if (typeof window !== 'undefined' && window.innerWidth < 768 && mediaArray.length > 1) {
+      setShowMobileHint(true);
+      setTimeout(() => setShowMobileHint(false), 3000);
+    }
+    
     // Start loading high-res version immediately
     const targetSrc = allProjectImages.length > 0 ? allProjectImages[currentIndex] : src;
     preloadHighRes(targetSrc);
-  }, [currentIndex, allProjectImages, src, preloadHighRes, triggerHapticFeedback]);
+  }, [currentIndex, allProjectImages, src, preloadHighRes, triggerHapticFeedback, mediaArray.length, setShowMobileHint]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
@@ -188,39 +192,39 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   }, [triggerHapticFeedback]);
   
   
-  // Double-tap to zoom
-  const handleDoubleTap = useCallback((e: React.TouchEvent) => {
+  // Mobile tap zone detection for navigation
+  const handleMobileTap = useCallback((e: React.TouchEvent) => {
     const now = Date.now();
     const timeDiff = now - lastTap;
     
+    // Double-tap to reset zoom
     if (timeDiff < 300 && timeDiff > 0) {
       e.preventDefault();
       triggerHapticFeedback('medium');
+      resetZoom();
+      setLastTap(now);
+      return;
+    }
+    
+    // Single tap for navigation (only if there are multiple media items)
+    if (mediaArray.length > 1 && zoom === 1) {
+      const touch = e.changedTouches[0];
+      const rect = e.currentTarget.getBoundingClientRect();
+      const tapX = touch.clientX - rect.left;
+      const screenWidth = rect.width;
       
-      if (zoom === 1) {
-        // Zoom in to 2x
-        setZoom(2);
-        
-        // Center zoom on touch point
-        const touch = e.changedTouches[0];
-        const rect = e.currentTarget.getBoundingClientRect();
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const touchX = touch.clientX - rect.left;
-        const touchY = touch.clientY - rect.top;
-        
-        setPosition({
-          x: (centerX - touchX) * 0.5,
-          y: (centerY - touchY) * 0.5
-        });
+      // Left half = previous, right half = next
+      if (tapX < screenWidth / 2) {
+        prevImage();
       } else {
-        // Reset zoom
-        resetZoom();
+        nextImage();
       }
+      
+      triggerHapticFeedback('light');
     }
     
     setLastTap(now);
-  }, [lastTap, zoom, resetZoom, triggerHapticFeedback]);
+  }, [lastTap, resetZoom, triggerHapticFeedback, mediaArray.length, zoom, prevImage, nextImage]);
   
   // Pinch-to-zoom helpers
   const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
@@ -297,8 +301,6 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   // Touch gesture handlers
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
-    setIsSwipeGesture(false);
     
     if (zoom > 1) {
       setIsDragging(true);
@@ -311,7 +313,6 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
-    setTouchEnd({ x: touch.clientX, y: touch.clientY });
     
     if (isDragging && zoom > 1) {
       e.preventDefault();
@@ -323,30 +324,9 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   }, [isDragging, zoom, dragStart]);
   
   const handleTouchEnd = useCallback(() => {
-    if (!isDragging && mediaArray.length > 1) {
-      const deltaX = touchEnd.x - touchStart.x;
-      const deltaY = Math.abs(touchEnd.y - touchStart.y);
-      const minSwipeDistance = 50;
-      
-      // Check if it's a horizontal swipe (not vertical scroll)
-      if (Math.abs(deltaX) > minSwipeDistance && deltaY < 100) {
-        setIsSwipeGesture(true);
-        triggerHapticFeedback('medium');
-        
-        if (deltaX > 0) {
-          // Swipe right - go to previous image
-          prevImage();
-        } else {
-          // Swipe left - go to next image
-          nextImage();
-        }
-      }
-    }
-    
+    // Only handle drag ending, no swipe detection (using tap zones instead)
     setIsDragging(false);
-    setTouchStart({ x: 0, y: 0 });
-    setTouchEnd({ x: 0, y: 0 });
-  }, [isDragging, mediaArray.length, touchEnd, touchStart, triggerHapticFeedback, prevImage, nextImage]);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -460,7 +440,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                 handlePinchMove(e);
               }}
               onTouchEnd={(e) => {
-                handleDoubleTap(e);
+                handleMobileTap(e);
                 handleTouchEnd();
                 handlePinchEnd();
               }}
@@ -624,115 +604,27 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
               )}
             </div>
 
-            {/* Mobile bottom control bar */}
-            <div className="md:hidden absolute bottom-12 left-0 right-0 z-50 pointer-events-auto">
-              <div 
-                className="flex items-center justify-center px-1 py-4 gap-2 overflow-x-auto"
-                onClick={(e) => e.stopPropagation()}
-                onTouchEnd={(e) => e.stopPropagation()}
-              >
-                {/* Navigation group */}
-                {mediaArray.length > 1 && (
-                  <>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                      onTouchEnd={(e) => { e.stopPropagation(); }}
-                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                      aria-label="Previous image"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="15,18 9,12 15,6" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                      onTouchEnd={(e) => { e.stopPropagation(); }}
-                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                      aria-label="Next image"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9,18 15,12 9,6" />
-                      </svg>
-                    </button>
-                    <div className="w-px h-6 bg-white bg-opacity-30 mx-0.5" />
-                  </>
-                )}
-                
-                {/* Control group */}
-                {isCurrentMediaVideo() && currentMedia.hasAudio && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleMute(); }}
-                    onTouchEnd={(e) => { e.stopPropagation(); }}
-                    className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                    aria-label={isMuted ? "Unmute video" : "Mute video"}
-                  >
-                    {isMuted ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                        <line x1="23" y1="9" x2="17" y2="15" />
-                        <line x1="17" y1="9" x2="23" y2="15" />
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-                      </svg>
-                    )}
-                  </button>
-                )}
-                {!isCurrentMediaVideo() && (
-                  <>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); zoomOut(); }}
-                      onTouchEnd={(e) => { e.stopPropagation(); }}
-                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                      aria-label="Zoom out"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                        <line x1="8" y1="11" x2="14" y2="11" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); resetZoom(); }}
-                      onTouchEnd={(e) => { e.stopPropagation(); }}
-                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                      aria-label="Reset zoom"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="1,4 1,10 7,10" />
-                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); zoomIn(); }}
-                      onTouchEnd={(e) => { e.stopPropagation(); }}
-                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                      aria-label="Zoom in"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                        <line x1="11" y1="8" x2="11" y2="14" />
-                        <line x1="8" y1="11" x2="14" y2="11" />
-                      </svg>
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={(e) => { e.stopPropagation(); closeModal(); }}
-                  onTouchEnd={(e) => { e.stopPropagation(); }}
-                  className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                  aria-label="Close image viewer"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
+            {/* Mobile gesture hint */}
+            {showMobileHint && (
+              <div className="md:hidden absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-4 py-3 rounded-lg text-sm z-50">
+                <div className="text-center space-y-1">
+                  <div>Tap sides to navigate</div>
+                  <div>Pinch to zoom • Double tap to reset</div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Mobile close button only */}
+            <button
+              onClick={closeModal}
+              className="md:hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all z-50"
+              aria-label="Close image viewer"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
