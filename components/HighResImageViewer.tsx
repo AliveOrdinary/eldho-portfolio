@@ -235,6 +235,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   
   const handlePinchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
+      e.preventDefault(); // Prevent Chrome's default zoom behavior
       const distance = getDistance(e.touches[0], e.touches[1]);
       setPinchDistance(distance);
       setInitialPinchZoom(zoom);
@@ -251,8 +252,11 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
     }
   }, [pinchDistance, initialPinchZoom]);
   
-  const handlePinchEnd = useCallback(() => {
-    setPinchDistance(0);
+  const handlePinchEnd = useCallback((e: React.TouchEvent) => {
+    // Only reset if we're not in a pinch gesture anymore
+    if (e.touches.length < 2) {
+      setPinchDistance(0);
+    }
     // Don't reset initialPinchZoom - let it maintain the current zoom level
   }, []);
 
@@ -421,10 +425,11 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
             className="modal-container relative w-full h-full flex items-center justify-center p-4"
           >
             <div 
-              className="relative max-w-[90vw] max-h-[90vh] cursor-grab active:cursor-grabbing touch-none flex items-center justify-center"
+              className="relative max-w-[90vw] max-h-[90vh] cursor-grab active:cursor-grabbing flex items-center justify-center"
               style={{
                 transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
-                transformOrigin: 'center center'
+                transformOrigin: 'center center',
+                touchAction: 'none' // Prevent browser default touch behaviors
               }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
@@ -442,7 +447,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
               onTouchEnd={(e) => {
                 handleMobileTap(e);
                 handleTouchEnd();
-                handlePinchEnd();
+                handlePinchEnd(e);
               }}
             >
               {isCurrentMediaVideo() ? (
