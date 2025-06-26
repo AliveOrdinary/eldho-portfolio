@@ -119,6 +119,7 @@ export default async function Project(
                   quality={100}
                   sizes="100vw"
                   allProjectImages={projectImageArray}
+                  allProjectMedia={sortedMedia}
                   currentIndex={0}
                 />
               )}
@@ -176,7 +177,8 @@ export default async function Project(
                       quality={95}
                       sizes="100vw"
                       allProjectImages={projectImageArray}
-                      currentIndex={projectImageArray.indexOf(item.src)}
+                      allProjectMedia={sortedMedia}
+                      currentIndex={index}
                     />
                   )}
                   {item.caption && (

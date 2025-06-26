@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import OptimizedImage from './OptimizedImage';
+import { ProjectMediaItem } from '../lib/types';
 
 interface HighResImageViewerProps {
   src: string;
@@ -11,9 +12,9 @@ interface HighResImageViewerProps {
   quality?: number;
   sizes?: string;
   allProjectImages?: string[];
+  allProjectMedia?: ProjectMediaItem[];
   currentIndex?: number;
   highResQuality?: number;
-  enableDownload?: boolean;
 }
 
 interface ImageDimensions {
@@ -29,9 +30,9 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   quality = 95,
   sizes = '100vw',
   allProjectImages = [],
+  allProjectMedia = [],
   currentIndex = 0,
-  highResQuality = 100,
-  enableDownload = true
+  highResQuality = 100
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(currentIndex);
@@ -48,11 +49,21 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   const [, setImageDimensions] = useState<ImageDimensions | null>(null);
   const [highResLoaded, setHighResLoaded] = useState(false);
   const [isLoadingHighRes, setIsLoadingHighRes] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const modalRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const highResImageRef = useRef<HTMLImageElement>(null);
 
-  const currentImageSrc = allProjectImages.length > 0 ? allProjectImages[activeImageIndex] : src;
+  // Use mixed media if available, otherwise fall back to images only
+  const mediaArray = allProjectMedia.length > 0 ? allProjectMedia : allProjectImages.map(imgSrc => ({ type: 'image' as const, src: imgSrc, order: 0, hasAudio: false }));
+  const currentMedia = mediaArray.length > 0 ? mediaArray[activeImageIndex] : { type: 'image' as const, src, order: 0, hasAudio: false };
+  const currentImageSrc = currentMedia.src;
+  
+  // Helper function to check if current media is a video
+  const isCurrentMediaVideo = () => {
+    const src = currentMedia.src.toLowerCase();
+    return src.endsWith('.mp4') || src.endsWith('.webm') || src.endsWith('.mov') || currentMedia.type === 'video';
+  };
   
   // Haptic feedback utility
   const triggerHapticFeedback = useCallback((type: 'light' | 'medium' | 'heavy' = 'light') => {
@@ -89,17 +100,19 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   
   // Preload adjacent images for smooth navigation
   const preloadAdjacentImages = useCallback(() => {
-    if (allProjectImages.length > 1) {
-      const nextIndex = (activeImageIndex + 1) % allProjectImages.length;
-      const prevIndex = (activeImageIndex - 1 + allProjectImages.length) % allProjectImages.length;
+    if (mediaArray.length > 1) {
+      const nextIndex = (activeImageIndex + 1) % mediaArray.length;
+      const prevIndex = (activeImageIndex - 1 + mediaArray.length) % mediaArray.length;
       
-      // Preload next and previous images
-      [allProjectImages[nextIndex], allProjectImages[prevIndex]].forEach(imageSrc => {
-        const img = new Image();
-        img.src = getHighResUrl(imageSrc);
+      // Preload next and previous media (only if they are images)
+      [mediaArray[nextIndex], mediaArray[prevIndex]].forEach(media => {
+        if (media.type === 'image') {
+          const img = new Image();
+          img.src = getHighResUrl(media.src);
+        }
       });
     }
-  }, [allProjectImages, activeImageIndex, getHighResUrl]);
+  }, [mediaArray, activeImageIndex, getHighResUrl]);
 
   const openModal = useCallback(() => {
     setIsModalOpen(true);
@@ -122,30 +135,36 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   }, []);
   
   const nextImage = useCallback(() => {
-    if (allProjectImages.length > 1) {
-      const newIndex = (activeImageIndex + 1) % allProjectImages.length;
+    if (mediaArray.length > 1) {
+      const newIndex = (activeImageIndex + 1) % mediaArray.length;
       setActiveImageIndex(newIndex);
       setZoom(1);
       setPosition({ x: 0, y: 0 });
       setHighResLoaded(false);
       setIsLoadingHighRes(true);
-      preloadHighRes(allProjectImages[newIndex]);
+      const newMedia = mediaArray[newIndex];
+      if (newMedia.type === 'image') {
+        preloadHighRes(newMedia.src);
+      }
       triggerHapticFeedback('light');
     }
-  }, [allProjectImages, activeImageIndex, preloadHighRes, triggerHapticFeedback]);
+  }, [mediaArray, activeImageIndex, preloadHighRes, triggerHapticFeedback]);
 
   const prevImage = useCallback(() => {
-    if (allProjectImages.length > 1) {
-      const newIndex = (activeImageIndex - 1 + allProjectImages.length) % allProjectImages.length;
+    if (mediaArray.length > 1) {
+      const newIndex = (activeImageIndex - 1 + mediaArray.length) % mediaArray.length;
       setActiveImageIndex(newIndex);
       setZoom(1);
       setPosition({ x: 0, y: 0 });
       setHighResLoaded(false);
       setIsLoadingHighRes(true);
-      preloadHighRes(allProjectImages[newIndex]);
+      const newMedia = mediaArray[newIndex];
+      if (newMedia.type === 'image') {
+        preloadHighRes(newMedia.src);
+      }
       triggerHapticFeedback('light');
     }
-  }, [allProjectImages, activeImageIndex, preloadHighRes, triggerHapticFeedback]);
+  }, [mediaArray, activeImageIndex, preloadHighRes, triggerHapticFeedback]);
 
   const zoomIn = useCallback(() => {
     setZoom(prev => Math.min(prev * 1.5, 5));
@@ -163,26 +182,11 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
     triggerHapticFeedback('medium');
   }, [triggerHapticFeedback]);
   
-  // Smart background click handler
-  const handleBackgroundClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent event from bubbling up to parent elements
-    e.stopPropagation();
-    
-    // Only handle clicks on the background div itself
-    const target = e.target as HTMLElement;
-    const isBackgroundClick = target.classList.contains('modal-backdrop') || 
-                             target.classList.contains('modal-container');
-    
-    if (isBackgroundClick) {
-      if (zoom > 1) {
-        // If zoomed in, reset zoom first
-        resetZoom();
-      } else {
-        // If not zoomed, close modal
-        closeModal();
-      }
-    }
-  }, [zoom, resetZoom, closeModal]);
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => !prev);
+    triggerHapticFeedback('light');
+  }, [triggerHapticFeedback]);
+  
   
   // Double-tap to zoom
   const handleDoubleTap = useCallback((e: React.TouchEvent) => {
@@ -288,15 +292,6 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
     });
   }, []);
   
-  // Download high-res image
-  const downloadHighRes = useCallback(() => {
-    const link = document.createElement('a');
-    link.href = getHighResUrl(currentImageSrc);
-    link.download = `${alt.replace(/\s+/g, '-').toLowerCase()}-highres`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [currentImageSrc, alt, getHighResUrl]);
   
   
   // Touch gesture handlers
@@ -328,7 +323,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
   }, [isDragging, zoom, dragStart]);
   
   const handleTouchEnd = useCallback(() => {
-    if (!isDragging && allProjectImages.length > 1) {
+    if (!isDragging && mediaArray.length > 1) {
       const deltaX = touchEnd.x - touchStart.x;
       const deltaY = Math.abs(touchEnd.y - touchStart.y);
       const minSwipeDistance = 50;
@@ -351,7 +346,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
     setIsDragging(false);
     setTouchStart({ x: 0, y: 0 });
     setTouchEnd({ x: 0, y: 0 });
-  }, [isDragging, allProjectImages.length, touchEnd, touchStart, triggerHapticFeedback, prevImage, nextImage]);
+  }, [isDragging, mediaArray.length, touchEnd, touchStart, triggerHapticFeedback, prevImage, nextImage]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -441,19 +436,9 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
           ref={modalRef}
           className="modal-backdrop fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
-          onClick={handleBackgroundClick}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            handleBackgroundClick(e);
-          }}
         >
           <div 
-            className="modal-container relative w-full h-full flex items-center justify-center p-4" 
-            onClick={handleBackgroundClick}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              handleBackgroundClick(e);
-            }}
+            className="modal-container relative w-full h-full flex items-center justify-center p-4"
           >
             <div 
               className="relative max-w-[90vw] max-h-[90vh] cursor-grab active:cursor-grabbing touch-none flex items-center justify-center"
@@ -480,44 +465,63 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                 handlePinchEnd();
               }}
             >
-              {/* Standard quality image (loads immediately) */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                ref={imageRef}
-                src={currentImageSrc}
-                alt={alt}
-                className={`max-w-full max-h-full object-contain select-none transition-opacity duration-300 block ${
-                  highResLoaded ? 'opacity-0' : 'opacity-100'
-                }`}
-                onLoad={handleImageLoad}
-                draggable={false}
-                style={{ margin: '0 auto' }}
-              />
-              
-              {/* High-res overlay (loads on top when ready) */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                ref={highResImageRef}
-                src={getHighResUrl(currentImageSrc)}
-                alt={`${alt} (High Resolution)`}
-                className={`absolute inset-0 max-w-full max-h-full object-contain select-none transition-opacity duration-300 block ${
-                  highResLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                style={{ margin: '0 auto' }}
-                onLoad={(e) => {
-                  handleImageLoad(e);
-                  setHighResLoaded(true);
-                  setIsLoadingHighRes(false);
-                }}
-                onError={() => setIsLoadingHighRes(false)}
-                draggable={false}
-              />
-              
-              {/* Loading indicator */}
-              {isLoadingHighRes && (
-                <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
-                  Loading high quality...
-                </div>
+              {isCurrentMediaVideo() ? (
+                // Video content
+                <video
+                  src={currentImageSrc}
+                  autoPlay
+                  loop
+                  muted={isMuted}
+                  playsInline
+                  className="max-w-full max-h-full object-contain select-none"
+                  style={{ margin: '0 auto' }}
+                  onLoadedData={() => {
+                    setHighResLoaded(true);
+                    setIsLoadingHighRes(false);
+                  }}
+                />
+              ) : (
+                <>
+                  {/* Standard quality image (loads immediately) */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    ref={imageRef}
+                    src={currentImageSrc}
+                    alt={alt}
+                    className={`max-w-full max-h-full object-contain select-none transition-opacity duration-300 block ${
+                      highResLoaded ? 'opacity-0' : 'opacity-100'
+                    }`}
+                    onLoad={handleImageLoad}
+                    draggable={false}
+                    style={{ margin: '0 auto' }}
+                  />
+                  
+                  {/* High-res overlay (loads on top when ready) */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    ref={highResImageRef}
+                    src={getHighResUrl(currentImageSrc)}
+                    alt={`${alt} (High Resolution)`}
+                    className={`absolute inset-0 max-w-full max-h-full object-contain select-none transition-opacity duration-300 block ${
+                      highResLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    style={{ margin: '0 auto' }}
+                    onLoad={(e) => {
+                      handleImageLoad(e);
+                      setHighResLoaded(true);
+                      setIsLoadingHighRes(false);
+                    }}
+                    onError={() => setIsLoadingHighRes(false)}
+                    draggable={false}
+                  />
+                  
+                  {/* Loading indicator for images */}
+                  {isLoadingHighRes && (
+                    <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                      Loading high quality...
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -533,7 +537,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
               </svg>
             </button>
 
-            {allProjectImages.length > 1 && (
+            {mediaArray.length > 1 && (
               <>
                 {/* Desktop navigation buttons */}
                 <button
@@ -559,55 +563,65 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
             )}
 
 
-            {/* Desktop zoom controls */}
+            {/* Desktop controls */}
             <div className="absolute bottom-4 right-4 md:flex gap-2 hidden">
-              {enableDownload && (
+              {isCurrentMediaVideo() && currentMedia.hasAudio && (
                 <button
-                  onClick={downloadHighRes}
+                  onClick={toggleMute}
                   className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                  aria-label="Download high resolution image"
-                  title="Download high-res version"
+                  aria-label={isMuted ? "Unmute video" : "Mute video"}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7,10 12,15 17,10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
+                  {isMuted ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                      <line x1="23" y1="9" x2="17" y2="15" />
+                      <line x1="17" y1="9" x2="23" y2="15" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    </svg>
+                  )}
                 </button>
               )}
-              <button
-                onClick={zoomOut}
-                className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                aria-label="Zoom out"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                  <line x1="8" y1="11" x2="14" y2="11" />
-                </svg>
-              </button>
-              <button
-                onClick={resetZoom}
-                className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                aria-label="Reset zoom"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="1,4 1,10 7,10" />
-                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                </svg>
-              </button>
-              <button
-                onClick={zoomIn}
-                className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
-                aria-label="Zoom in"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                  <line x1="11" y1="8" x2="11" y2="14" />
-                  <line x1="8" y1="11" x2="14" y2="11" />
-                </svg>
-              </button>
+              {!isCurrentMediaVideo() && (
+                <>
+                  <button
+                    onClick={zoomOut}
+                    className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                    aria-label="Zoom out"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                      <line x1="8" y1="11" x2="14" y2="11" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={resetZoom}
+                    className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                    aria-label="Reset zoom"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="1,4 1,10 7,10" />
+                      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={zoomIn}
+                    className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                    aria-label="Zoom in"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                      <line x1="11" y1="8" x2="11" y2="14" />
+                      <line x1="8" y1="11" x2="14" y2="11" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Mobile bottom control bar */}
@@ -618,7 +632,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                 onTouchEnd={(e) => e.stopPropagation()}
               >
                 {/* Navigation group */}
-                {allProjectImages.length > 1 && (
+                {mediaArray.length > 1 && (
                   <>
                     <button
                       onClick={(e) => { e.stopPropagation(); prevImage(); }}
@@ -626,7 +640,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                       className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
                       aria-label="Previous image"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="15,18 9,12 15,6" />
                       </svg>
                     </button>
@@ -636,7 +650,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                       className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
                       aria-label="Next image"
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9,18 15,12 9,6" />
                       </svg>
                     </button>
@@ -645,55 +659,66 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                 )}
                 
                 {/* Control group */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); zoomOut(); }}
-                  onTouchEnd={(e) => { e.stopPropagation(); }}
-                  className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                  aria-label="Zoom out"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                    <line x1="8" y1="11" x2="14" y2="11" />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); resetZoom(); }}
-                  onTouchEnd={(e) => { e.stopPropagation(); }}
-                  className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                  aria-label="Reset zoom"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="1,4 1,10 7,10" />
-                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); zoomIn(); }}
-                  onTouchEnd={(e) => { e.stopPropagation(); }}
-                  className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                  aria-label="Zoom in"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                    <line x1="11" y1="8" x2="11" y2="14" />
-                    <line x1="8" y1="11" x2="14" y2="11" />
-                  </svg>
-                </button>
-                {enableDownload && (
+                {isCurrentMediaVideo() && currentMedia.hasAudio && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); downloadHighRes(); }}
+                    onClick={(e) => { e.stopPropagation(); toggleMute(); }}
                     onTouchEnd={(e) => { e.stopPropagation(); }}
                     className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
-                    aria-label="Download high resolution image"
+                    aria-label={isMuted ? "Unmute video" : "Mute video"}
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7,10 12,15 17,10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
+                    {isMuted ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                        <line x1="23" y1="9" x2="17" y2="15" />
+                        <line x1="17" y1="9" x2="23" y2="15" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                      </svg>
+                    )}
                   </button>
+                )}
+                {!isCurrentMediaVideo() && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); zoomOut(); }}
+                      onTouchEnd={(e) => { e.stopPropagation(); }}
+                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
+                      aria-label="Zoom out"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                        <line x1="8" y1="11" x2="14" y2="11" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); resetZoom(); }}
+                      onTouchEnd={(e) => { e.stopPropagation(); }}
+                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
+                      aria-label="Reset zoom"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="1,4 1,10 7,10" />
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); zoomIn(); }}
+                      onTouchEnd={(e) => { e.stopPropagation(); }}
+                      className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
+                      aria-label="Zoom in"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                        <line x1="11" y1="8" x2="11" y2="14" />
+                        <line x1="8" y1="11" x2="14" y2="11" />
+                      </svg>
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={(e) => { e.stopPropagation(); closeModal(); }}
@@ -701,7 +726,7 @@ const HighResImageViewer: React.FC<HighResImageViewerProps> = ({
                   className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all flex-shrink-0"
                   aria-label="Close image viewer"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
