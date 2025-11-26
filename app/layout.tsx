@@ -43,10 +43,13 @@ export default function RootLayout({
       <body className="antialiased">
         {children}
         
-        <Script src="https://identity.netlify.com/v1/netlify-identity-widget.js" />
-        <Script id="netlify-identity-redirect">
+        <Script 
+          src="https://identity.netlify.com/v1/netlify-identity-widget.js"
+          strategy="afterInteractive"
+        />
+        <Script id="netlify-identity-redirect" strategy="afterInteractive">
           {`
-            if (window.netlifyIdentity) {
+            if (typeof window !== 'undefined' && window.netlifyIdentity) {
               window.netlifyIdentity.on("init", user => {
                 if (!user) {
                   window.netlifyIdentity.on("login", () => {
